@@ -1,100 +1,17 @@
+mod models;
+
 use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::fs;
-use std::io::{self, Write};
+use std::io::{self};
+
+use models::portfolio_summary::PortfolioSummary;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Config {
     api_key: String,
     cardano_address: String,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-struct PortfolioSummary {
-    #[serde(rename = "adaBalance")]
-    ada_balance: Option<f64>,
-    #[serde(rename = "adaValue")]
-    ada_value: Option<f64>,
-    #[serde(rename = "liquidValue")]
-    liquid_value: Option<f64>,
-    #[serde(rename = "numFTs")]
-    num_fts: Option<u32>, 
-    #[serde(rename = "numNFTs")]
-    num_nfts: Option<u32>,
-    #[serde(rename = "positionsFt")]
-    positions_ft: Option<Vec<FtPosition>>,
-    #[serde(rename = "positionsLp")]
-    positions_lp: Option<Vec<LpPosition>>,
-    #[serde(rename = "positionsNft")]
-    positions_nft: Option<Vec<NftPosition>>,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-struct FtPosition {
-    balance: f64,
-    #[serde(rename = "liquidBalance")]
-    liquid_balance: f64,
-    #[serde(rename = "adaValue")]
-    ada_value: f64,
-    #[serde(rename = "liquidValue")]
-    liquid_value: f64,
-    // price: f64,
-    ticker: String,
-    unit: String,
-    fingerprint: String,
-    #[serde(rename = "24h")]
-    change_24h: Option<f64>, 
-    #[serde(rename = "7d")]
-    change_7d: Option<f64>, 
-    #[serde(rename = "30d")]
-    change_30d: Option<f64>, 
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-struct LpPosition {
-    #[serde(rename = "amountLP")]
-    amount_lp: u64,
-    #[serde(rename = "adaValue")]
-    ada_value: f64,
-    #[serde(rename = "liquidValue")]
-    liquid_value: f64,
-    ticker: String,
-    exchange: String,
-    unit: String,
-    #[serde(rename = "tokenA")]
-    token_a: String,
-    #[serde(rename = "tokenAAmount")]
-    token_a_amount: f64,
-    #[serde(rename = "tokenAName")]
-    token_a_name: String,
-    #[serde(rename = "tokenB")]
-    token_b: String,
-    #[serde(rename = "tokenBAmount")]
-    token_b_amount: f64,
-    #[serde(rename = "tokenBName")]
-    token_b_name: String,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-struct NftPosition {
-    balance: u32, 
-    #[serde(rename = "adaValue")]
-    ada_value: f64,
-    #[serde(rename = "liquidValue")]
-    liquid_value: f64,
-    #[serde(rename = "floorPrice")]
-    floor_price: f64,
-    listings: u32, 
-    name: String,
-    policy: String,
-    #[serde(rename = "24h")]
-    change_24h: Option<f64>, 
-    #[serde(rename = "7d")]
-    change_7d: Option<f64>, 
-    #[serde(rename = "30d")]
-    change_30d: Option<f64>, 
 }
 
 fn read_config(file_path: &str) -> Option<Config> {
