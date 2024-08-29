@@ -1,4 +1,5 @@
 mod models;
+mod services;
 
 use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::Client;
@@ -20,6 +21,16 @@ use tui::Terminal;
 
 
 use models::portfolio_summary::{PortfolioSummary};
+use services::portfolio_api::{
+    read_portfolio_api_config, prompt_user_for_portfolio_api_config, write_portfolio_api_config, get_portfolio_data
+};
+
+// User-Specific Configuration (separate from TapTools)
+#[derive(Debug, Serialize, Deserialize)]
+struct UserConfig {
+    cardano_address: String,
+    // Add 'watch_list' here in the future
+}
 
 #[derive(Clone,PartialEq)]
 enum Page {
@@ -40,13 +51,7 @@ impl MenuItem {
     
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Config {
-    api_key: String,
-    cardano_address: String,
-}
-
-fn read_config(file_path: &str) -> Option<Config> {
+fn read_user_config(file_path: &str) -> Option<UserConfig> {
     if let Ok(config_data) = fs::read_to_string(file_path) {
         if let Ok(config) = serde_json::from_str(&config_data) {
             return Some(config);
@@ -55,41 +60,46 @@ fn read_config(file_path: &str) -> Option<Config> {
     None
 }
 
-fn write_config(file_path: &str, config: &Config) {
+fn write_user_config(file_path: &str, config: &UserConfig) {
     let config_data = serde_json::to_string_pretty(config).unwrap();
     fs::write(file_path, config_data).unwrap();
 }
 
-fn prompt_user_for_config() -> Config {
-    let mut api_key = String::new();
+// Prompt user for PortfolioApi API key
+pub fn prompt_user_for_user_config() -> UserConfig {
     let mut cardano_address = String::new();
 
-    println!("Enter your TapTools API key:");
-    io::stdin().read_line(&mut api_key).unwrap();
     println!("Enter your Cardano address:");
-    io::stdin().read_line(&mut cardano_address).unwrap();
+    std::io::stdin().read_line(&mut cardano_address).unwrap();
 
-    Config {
-        api_key: api_key.trim().to_string(),
+    UserConfig {
         cardano_address: cardano_address.trim().to_string(),
     }
 }
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config_file_path = "config.json";
 
-    let config = if let Some(config) = read_config(config_file_path) {
+    let user_config_file_path = "user_config.json";
+    let taptools_config_file_path = "taptools_config.json"; 
+
+    let user_config = if let Some(config) = read_user_config(user_config_file_path) {
         config
     } else {
-        let config = prompt_user_for_config();
-        write_config(config_file_path, &config);
+        let config = prompt_user_for_user_config();
+        write_user_config(user_config_file_path, &config);
         config
     };
 
+    let taptools_config = if let Some(config) = read_portfolio_api_config(taptools_config_file_path) {
+        config
+    } else {
+        let config = prompt_user_for_portfolio_api_config();
+        write_portfolio_api_config(taptools_config_file_path, &config);
+        config
+    };
 
-    // Construct TapTools API URL
-    let positions_url = format!("https://openapi.taptools.io/api/v1/wallet/portfolio/positions?address={}", config.cardano_address);
-    match get_portfolio_data(&positions_url, &config.api_key).await {
+    let positions_url = format!("https://openapi.taptools.io/api/v1/wallet/portfolio/positions?address={}", user_config.cardano_address);
+    match get_portfolio_data(&positions_url, &taptools_config.api_key).await {
         Ok(data) => {
             // Initialize Terminal UI
             enable_raw_mode()?;
@@ -151,22 +161,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
-}
-
-async fn get_portfolio_data(positions_url: &str, api_key: &str) -> Result<PortfolioSummary, reqwest::Error> {
-    // Create a new client
-    let client = Client::new();
-    
-    // Create a header map and insert the authorization header
-    let mut headers = HeaderMap::new();
-    headers.insert("x-api-key", HeaderValue::from_str(api_key).unwrap());
-        
-    // Make API request and handle response
-    let response = client.get(positions_url)
-        .headers(headers)
-        .send()
-        .await?;
-        // Deserialize the response into a PortfolioSummary object
-    let portfolio_summary = response.json::<PortfolioSummary>().await?;
-    Ok(portfolio_summary)
 }
