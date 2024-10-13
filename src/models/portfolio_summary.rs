@@ -1,3 +1,4 @@
+use std::fmt;
 use serde::{Deserialize, Serialize};
 use super::nft_position::NftPosition;
 use super::ft_position::FtPosition;
@@ -21,4 +22,11 @@ pub struct PortfolioSummary {
     positions_lp: Option<Vec<LpPosition>>,
     #[serde(rename = "positionsNft")]
     positions_nft: Option<Vec<NftPosition>>,
+}
+
+impl fmt::Display for PortfolioSummary {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "PortfolioSummary {{ ada_balance: {:?}, ada_value: {:?}, liquid_value: {:?}, num_fts: {:?}, num_nfts: {:?} }}",
+            self.ada_balance, self.ada_value, self.liquid_value, self.num_fts, self.num_nfts)
+    }
 }
