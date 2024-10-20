@@ -2,6 +2,7 @@
 pub enum Page {
     TopNftPositions,
     WatchList,
+    Account,
     Quit,
 }
 
@@ -27,6 +28,7 @@ pub struct AppState {
     pub menu_items: Vec<MenuItem>,
     pub current_menu_item: usize,
     pub portfolio_data: String,
+    pub account_menu_index: usize,
 }
 
 impl AppState {
@@ -35,23 +37,13 @@ impl AppState {
             MenuItem::new('n', "Top NFT Positions", Page::TopNftPositions, "This is the content inside the block"),
             MenuItem::new('w', "Watch List", Page::WatchList, "This is the watch List"),
             MenuItem::new('q', "Quit", Page::Quit, ""),
+            MenuItem::new('a', "Account", Page::Account, ""),
         ];
         AppState {
             menu_items,
             current_menu_item: 0,
             portfolio_data,
-        }
-    }
-
-    pub fn next(&mut self) {
-        self.current_menu_item = (self.current_menu_item + 1) % self.menu_items.len();
-    }
-
-    pub fn previous(&mut self) {
-        if self.current_menu_item > 0 {
-            self.current_menu_item -= 1;
-        } else {
-            self.current_menu_item = self.menu_items.len() - 1;
+            account_menu_index: 0,
         }
     }
 
@@ -59,5 +51,11 @@ impl AppState {
         if let Some(index) = self.menu_items.iter().position(|item| item.page == page) {
             self.current_menu_item = index;
         }
+    }
+
+    pub fn toggle_account_expanded(&mut self) {
+        // Implement the logic to toggle account expansion
+        // For example:
+        // self.account_expanded = !self.account_expanded;
     }
 }

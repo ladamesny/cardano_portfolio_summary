@@ -32,8 +32,7 @@ impl App {
                             KeyCode::Char('q') => return Ok(()),
                             KeyCode::Char('w') => self.state.set_current_page(Page::WatchList),
                             KeyCode::Char('n') => self.state.set_current_page(Page::TopNftPositions),
-                            KeyCode::Left => self.state.previous(),
-                            KeyCode::Right => self.state.next(),
+                            KeyCode::Char('a') => self.state.set_current_page(Page::Account),
                             _ => {}
                         }
                     }
