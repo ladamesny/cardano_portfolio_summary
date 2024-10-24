@@ -1,33 +1,12 @@
 use ratatui::{
-    backend::{Backend, CrosstermBackend},
-    Terminal,
+    backend::Backend,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
     widgets::{Block, Borders, Paragraph, List, ListItem, ListState},
     Frame,
-    crossterm::{
-        terminal::{enable_raw_mode, disable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-        execute,
-    },
 };
 
-use std::io::{self, Stdout};
-
 use super::state::AppState;
-
-pub fn setup_terminal() -> io::Result<Terminal<CrosstermBackend<Stdout>>> {
-    enable_raw_mode()?;
-    let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen)?;
-    let backend = CrosstermBackend::new(stdout);
-    Terminal::new(backend)
-}
-
-pub fn restore_terminal(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> io::Result<()> {
-    disable_raw_mode()?;
-    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
-    terminal.show_cursor()
-}
 
 pub fn draw<B: Backend>(f: &mut Frame, state: &AppState) {
     let size = f.area();

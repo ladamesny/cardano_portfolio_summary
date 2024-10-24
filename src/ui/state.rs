@@ -55,12 +55,6 @@ impl AppState {
         }
     }
 
-    pub fn toggle_account_expanded(&mut self) {
-        // Implement the logic to toggle account expansion
-        // For example:
-        // self.account_expanded = !self.account_expanded;
-    }
-
     pub fn current_page(&self) -> &Page {
         &self.menu_items[self.current_menu_item].page
     }
