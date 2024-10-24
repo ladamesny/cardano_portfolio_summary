@@ -1,13 +1,16 @@
-use crate::ui::{AppState, draw, Page};
+use crate::ui::{AppState, draw, draw_account_page, Page};
 use std::io;
-use ratatui::backend::Backend;
-use ratatui::Terminal;
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
-use crossterm::execute;
-use crossterm::terminal::{EnterAlternateScreen, LeaveAlternateScreen};
+use ratatui::{
+    backend::{Backend, CrosstermBackend},
+    Terminal,
+    layout::{Layout, Constraint, Direction},
+    crossterm::{
+        terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+        execute,
+        event::{self, Event as CrosstermEvent, KeyCode, KeyEvent},
+    },
+};
 use std::io::stdout;
-use ratatui::backend::CrosstermBackend;
-use crossterm::event::{self, Event as CrosstermEvent, KeyCode, KeyEvent};
 use std::time::Duration;
 
 pub struct App {
@@ -23,7 +26,19 @@ impl App {
 
     pub fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> io::Result<()> {
         loop {
-            terminal.draw(|f| draw::<B>(f, &self.state))?;
+            terminal.draw(|f| {
+                let size = f.area(); // Get the full terminal size
+                let chunks = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([Constraint::Min(1), Constraint::Length(3)].as_ref())
+                    .split(size);
+
+                if self.state.current_page() == &Page::Account {
+                    draw_account_page(f, &self.state, chunks[0]); // Pass the correct Rect
+                } else {
+                    draw::<B>(f, &self.state);
+                }
+            })?;
 
             if event::poll(Duration::from_millis(250))? {
                 match event::read()? {
@@ -33,6 +48,16 @@ impl App {
                             KeyCode::Char('w') => self.state.set_current_page(Page::WatchList),
                             KeyCode::Char('n') => self.state.set_current_page(Page::TopNftPositions),
                             KeyCode::Char('a') => self.state.set_current_page(Page::Account),
+                            KeyCode::Down => {
+                                if self.state.current_page() == &Page::Account {
+                                    self.state.next_account_menu_item();
+                                }
+                            },
+                            KeyCode::Up => {
+                                if self.state.current_page() == &Page::Account {
+                                    self.state.previous_account_menu_item();
+                                }
+                            },
                             _ => {}
                         }
                     }

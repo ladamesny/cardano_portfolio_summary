@@ -78,7 +78,6 @@ checksum = "8318a53db07bb3f8dca91a600466bdb3f2eaadeedfdbcf02e1accbad9271ba50"
 name = "cardano_portfolio_summary"
 version = "0.1.0"
 dependencies = [
- "crossterm",
  "ratatui",
  "reqwest",
  "serde",

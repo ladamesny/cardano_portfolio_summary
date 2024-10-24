@@ -1,11 +1,16 @@
-use ratatui::backend::{Backend, CrosstermBackend};
-use ratatui::Terminal;
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::style::{Color, Style};
-use ratatui::widgets::{Block, Borders, Paragraph, List, ListItem, ListState};
-use ratatui::Frame;
-use crossterm::terminal::{enable_raw_mode, disable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
-use crossterm::execute;
+use ratatui::{
+    backend::{Backend, CrosstermBackend},
+    Terminal,
+    layout::{Constraint, Direction, Layout, Rect},
+    style::{Color, Style},
+    widgets::{Block, Borders, Paragraph, List, ListItem, ListState},
+    Frame,
+    crossterm::{
+        terminal::{enable_raw_mode, disable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+        execute,
+    },
+};
+
 use std::io::{self, Stdout};
 
 use super::state::AppState;
@@ -50,7 +55,7 @@ pub fn draw<B: Backend>(f: &mut Frame, state: &AppState) {
     f.render_widget(menu_paragraph, chunks[1]);
 }
 
-fn draw_account_page(f: &mut Frame, state: &AppState, area: Rect) {
+pub fn draw_account_page(f: &mut Frame, state: &AppState, area: Rect) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Ratio(1, 3), Constraint::Ratio(2, 3)].as_ref())
@@ -58,12 +63,11 @@ fn draw_account_page(f: &mut Frame, state: &AppState, area: Rect) {
 
     let left_menu = Block::default()
         .borders(Borders::ALL)
-        .title("Menu");
+        .title("Account Menu");
 
-    let menu_items = vec!["Profile", "Wallets"];
-    let items: Vec<ListItem> = menu_items
+    let items: Vec<ListItem> = state.account_menu_items
         .iter()
-        .map(|&item| ListItem::new(item))
+        .map(|item| ListItem::new(item.clone()))
         .collect();
 
     let list = List::new(items)
@@ -72,12 +76,13 @@ fn draw_account_page(f: &mut Frame, state: &AppState, area: Rect) {
         .highlight_symbol("> ");
 
     let mut list_state = ListState::default();
-    list_state.select(Some(state.account_menu_index));
+    list_state.select(Some(state.selected_account_menu_item));
 
     f.render_stateful_widget(list, chunks[0], &mut list_state);
 
+    let selected_item = &state.account_menu_items[state.selected_account_menu_item];
     let right_content = Block::default()
         .borders(Borders::ALL)
-        .title("Content");
+        .title(selected_item.as_str());
     f.render_widget(right_content, chunks[1]);
 }

@@ -28,7 +28,8 @@ pub struct AppState {
     pub menu_items: Vec<MenuItem>,
     pub current_menu_item: usize,
     pub portfolio_data: String,
-    pub account_menu_index: usize,
+    pub account_menu_items: Vec<String>,
+    pub selected_account_menu_item: usize,
 }
 
 impl AppState {
@@ -43,7 +44,8 @@ impl AppState {
             menu_items,
             current_menu_item: 0,
             portfolio_data,
-            account_menu_index: 0,
+            account_menu_items: vec!["Profile".to_string(), "Wallets".to_string()],
+            selected_account_menu_item: 0,
         }
     }
 
@@ -57,5 +59,21 @@ impl AppState {
         // Implement the logic to toggle account expansion
         // For example:
         // self.account_expanded = !self.account_expanded;
+    }
+
+    pub fn current_page(&self) -> &Page {
+        &self.menu_items[self.current_menu_item].page
+    }
+
+    pub fn next_account_menu_item(&mut self) {
+        self.selected_account_menu_item = (self.selected_account_menu_item + 1) % self.account_menu_items.len();
+    }
+
+    pub fn previous_account_menu_item(&mut self) {
+        if self.selected_account_menu_item == 0 {
+            self.selected_account_menu_item = self.account_menu_items.len() - 1;
+        } else {
+            self.selected_account_menu_item -= 1;
+        }
     }
 }

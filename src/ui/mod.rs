@@ -5,12 +5,14 @@ mod ui;
 
 pub use app::{App};
 pub use state::{AppState, Page};
-pub use ui::{draw, setup_terminal, restore_terminal};
+pub use ui::{draw, draw_account_page, setup_terminal, restore_terminal};
 
 use std::io;
-use crossterm::event::{Event, KeyCode, read};
-use ratatui::Terminal;
-use ratatui::backend::Backend;
+use ratatui::{
+    backend::{Backend},
+    Terminal,
+    crossterm::event::{Event, KeyCode, read},
+};
 
 pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut AppState) -> io::Result<()> {
     loop {
@@ -27,6 +29,16 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut AppState) -> io
                         app.toggle_account_expanded();
                     } else {
                         app.set_current_page(app.menu_items[app.current_menu_item].page.clone());
+                    }
+                }
+                KeyCode::Down => {
+                    if app.current_page() == &Page::Account {
+                        app.next_account_menu_item();
+                    }
+                }
+                KeyCode::Up => {
+                    if app.current_page() == &Page::Account {
+                        app.previous_account_menu_item();
                     }
                 }
                 _ => {}
