@@ -44,18 +44,14 @@ fn create_main_layout(area: Rect) -> LayoutChunks {
 }
 
 fn draw_navigation(f: &mut Frame, state: &AppState, area: Rect) {
-    // Add border to the navigation area
-    let block = Block::default()
-        .borders(Borders::ALL);
+    let block = Block::default().borders(Borders::ALL);
     f.render_widget(block, area);
 
-    // Calculate the inner area for content (accounting for borders)
     let content_area = area.inner(Margin {
         horizontal: 1,
         vertical: 1,
     });
 
-    // Add padding to left and right
     let padding = 2;
     let content_area = Rect {
         x: content_area.x + padding,
@@ -63,10 +59,16 @@ fn draw_navigation(f: &mut Frame, state: &AppState, area: Rect) {
         ..content_area
     };
 
-    let mut menu: Vec<String> = state.menu_items.iter().enumerate()
-        .filter(|(_, item)| item.key != 'q')  // Exclude 'q' from the main menu
+    let menu_items = if state.is_content_focused() {
+        &state.focused_menu_items
+    } else {
+        &state.menu_items
+    };
+
+    let mut menu: Vec<String> = menu_items.iter().enumerate()
+        .filter(|(_, item)| item.key != "q")
         .map(|(index, item)| {
-            if index == state.current_menu_item {
+            if index == state.current_menu_item && !state.is_content_focused() {
                 format!("  {}  ", item.label)
             } else {
                 format!("({}) {}", item.key, item.label)
@@ -75,47 +77,45 @@ fn draw_navigation(f: &mut Frame, state: &AppState, area: Rect) {
 
     let menu_text = menu.join(" | ");
     
-    // Find the quit item
-    let quit_item = state.menu_items.iter()
-        .find(|item| item.key == 'q')
+    let quit_item = menu_items.iter()
+        .find(|item| item.key == "q")
         .map(|item| format!("({}) {}", item.key, item.label))
         .unwrap_or_default();
 
-    // Calculate the space between menu items and quit
     let available_width = content_area.width as usize;
     let menu_width = menu_text.len();
     let quit_width = quit_item.len();
     let spacing = available_width.saturating_sub(menu_width + quit_width);
 
-    // Combine menu items, spacing, and quit item
     let full_menu_text = format!("{}{:spacing$}{}", menu_text, "", quit_item, spacing = spacing);
 
     let menu_paragraph = Paragraph::new(full_menu_text)
         .style(Style::default().fg(Color::Yellow));
     f.render_widget(menu_paragraph, content_area);
 
-    // Highlight the selected item
-    if let Some(selected_item) = state.menu_items.get(state.current_menu_item) {
-        if selected_item.key != 'q' {
-            let mut start_x = content_area.x;
-            for (index, item) in state.menu_items.iter().enumerate() {
-                if index == state.current_menu_item {
-                    break;
+    if !state.is_content_focused() {
+        if let Some(selected_item) = menu_items.get(state.current_menu_item) {
+            if selected_item.key != "q" {
+                let mut start_x = content_area.x;
+                for (index, item) in menu_items.iter().enumerate() {
+                    if index == state.current_menu_item {
+                        break;
+                    }
+                    if item.key != "q" {
+                        start_x += (item.label.len() + 7) as u16;
+                    }
                 }
-                if item.key != 'q' {
-                    start_x += (item.label.len() + 7) as u16; // +7 for "() ", "  ", and " | "
-                }
+                let width = selected_item.label.len() as u16 + 4;
+                let highlight_area = Rect {
+                    x: start_x,
+                    y: content_area.y,
+                    width,
+                    height: 1,
+                };
+                let highlight = Paragraph::new(format!("  {}  ", selected_item.label))
+                    .style(Style::default().bg(Color::Rgb(128, 0, 128)).fg(Color::White));
+                f.render_widget(highlight, highlight_area);
             }
-            let width = selected_item.label.len() as u16 + 4; // +4 for padding
-            let highlight_area = Rect {
-                x: start_x,
-                y: content_area.y,
-                width,
-                height: 1,
-            };
-            let highlight = Paragraph::new(format!("  {}  ", selected_item.label))
-                .style(Style::default().bg(Color::Rgb(128, 0, 128)).fg(Color::White));
-            f.render_widget(highlight, highlight_area);
         }
     }
 }

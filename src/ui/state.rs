@@ -4,19 +4,20 @@ pub enum Page {
     WatchList,
     Account,
     Quit,
+    Back,
 }
 
 pub struct MenuItem {
-    pub key: char,
+    pub key: String,
     pub label: String,
     pub page: Page,
     pub content: String,
 }
 
 impl MenuItem {
-    pub fn new(key: char, label: &str, page: Page, content: &str) -> Self {
+    pub fn new(key: &str, label: &str, page: Page, content: &str) -> Self {
         MenuItem {
-            key,
+            key: key.to_string(),
             label: label.to_string(),
             page,
             content: content.to_string(),
@@ -32,6 +33,7 @@ pub enum AccountFocus {
 
 pub struct AppState {
     pub menu_items: Vec<MenuItem>,
+    pub focused_menu_items: Vec<MenuItem>,
     pub current_menu_item: usize,
     pub portfolio_data: String,
     pub account_menu_items: Vec<String>,
@@ -42,13 +44,18 @@ pub struct AppState {
 impl AppState {
     pub fn new(portfolio_data: String) -> Self {
         let menu_items = vec![
-            MenuItem::new('n', "Top NFT Positions", Page::TopNftPositions, "This is the content inside the block"),
-            MenuItem::new('w', "Watch List", Page::WatchList, "This is the watch List"),
-            MenuItem::new('q', "Quit", Page::Quit, ""),
-            MenuItem::new('a', "Account", Page::Account, ""),
+            MenuItem::new("n", "Top NFT Positions", Page::TopNftPositions, ""),
+            MenuItem::new("w", "Watch List", Page::WatchList, ""),
+            MenuItem::new("a", "Account", Page::Account, ""),
+            MenuItem::new("q", "Quit", Page::Quit, ""),
+        ];
+        let focused_menu_items = vec![
+            MenuItem::new("q", "Quit", Page::Quit, ""),
+            MenuItem::new("esc", "Back", Page::Back, ""),
         ];
         AppState {
             menu_items,
+            focused_menu_items,
             current_menu_item: 0,
             portfolio_data,
             account_menu_items: vec!["Profile".to_string(), "Wallets".to_string()],
@@ -91,5 +98,13 @@ impl AppState {
             AccountFocus::Menu => AccountFocus::Content,
             AccountFocus::Content => AccountFocus::Menu,
         };
+    }
+
+    pub fn is_content_focused(&self) -> bool {
+        match self.current_page() {
+            Page::Account => self.account_focus == AccountFocus::Content,
+            // Add other pages here when they have a content focus
+            _ => false,
+        }
     }
 }

@@ -1,5 +1,4 @@
 use crate::ui::{AppState, draw, Page};
-use super::state::AccountFocus;
 use std::io;
 use ratatui::{
     backend::{Backend, CrosstermBackend},
@@ -35,30 +34,38 @@ impl App {
                     CrosstermEvent::Key(KeyEvent { code, .. }) => {
                         match code {
                             KeyCode::Char('q') => return Ok(()),
-                            KeyCode::Char('w') => self.state.set_current_page(Page::WatchList),
-                            KeyCode::Char('n') => self.state.set_current_page(Page::TopNftPositions),
-                            KeyCode::Char('a') => self.state.set_current_page(Page::Account),
-                            KeyCode::Down => {
-                                if self.state.current_page() == &Page::Account {
-                                    self.state.next_account_menu_item();
-                                }
-                            },
-                            KeyCode::Up => {
-                                if self.state.current_page() == &Page::Account {
-                                    self.state.previous_account_menu_item();
-                                }
-                            },
-                            KeyCode::Enter => {
-                                if self.state.current_page() == &Page::Account && self.state.account_focus == AccountFocus::Menu {
-                                    self.state.toggle_account_focus();
-                                }
-                            },
                             KeyCode::Esc => {
-                                if self.state.current_page() == &Page::Account && self.state.account_focus == AccountFocus::Content {
+                                if self.state.is_content_focused() {
                                     self.state.toggle_account_focus();
                                 }
                             },
-                            _ => {}
+                            _ => {
+                                if self.state.is_content_focused() {
+                                    // Handle content-specific actions
+                                } else {
+                                    match code {
+                                        KeyCode::Char('w') => self.state.set_current_page(Page::WatchList),
+                                        KeyCode::Char('n') => self.state.set_current_page(Page::TopNftPositions),
+                                        KeyCode::Char('a') => self.state.set_current_page(Page::Account),
+                                        KeyCode::Down | KeyCode::Char('j') => {
+                                            if self.state.current_page() == &Page::Account {
+                                                self.state.next_account_menu_item();
+                                            }
+                                        },
+                                        KeyCode::Up | KeyCode::Char('k') => {
+                                            if self.state.current_page() == &Page::Account {
+                                                self.state.previous_account_menu_item();
+                                            }
+                                        },
+                                        KeyCode::Enter => {
+                                            if self.state.current_page() == &Page::Account {
+                                                self.state.toggle_account_focus();
+                                            }
+                                        },
+                                        _ => {}
+                                    }
+                                }
+                            }
                         }
                     }
                     _ => {}
