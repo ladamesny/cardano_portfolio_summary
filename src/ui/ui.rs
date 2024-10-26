@@ -1,6 +1,6 @@
 use ratatui::{
     backend::Backend,
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Constraint, Direction, Layout, Rect, Margin},
     style::{Color, Style},
     widgets::{Block, Borders, Paragraph, List, ListItem, ListState},
     Frame,
@@ -44,17 +44,55 @@ fn create_main_layout(area: Rect) -> LayoutChunks {
 }
 
 fn draw_navigation(f: &mut Frame, state: &AppState, area: Rect) {
-    let menu: Vec<String> = state.menu_items.iter().enumerate().map(|(index, item)| {
-        if index == state.current_menu_item {
-            format!("[{}] {}", item.key, item.label)
-        } else {
-            format!("({}) {}", item.key, item.label)
-        }
-    }).collect();
+    // Add border to the navigation area
+    let block = Block::default()
+        .borders(Borders::ALL);
+    f.render_widget(block, area);
+
+    // Calculate the inner area for content (accounting for borders)
+    let content_area = area.inner(Margin {
+        horizontal: 1,
+        vertical: 1,
+    });
+
+    // Add padding to left and right
+    let padding = 2;
+    let content_area = Rect {
+        x: content_area.x + padding,
+        width: content_area.width.saturating_sub(padding * 2),
+        ..content_area
+    };
+
+    let mut menu: Vec<String> = state.menu_items.iter().enumerate()
+        .filter(|(_, item)| item.key != 'q')  // Exclude 'q' from the main menu
+        .map(|(index, item)| {
+            if index == state.current_menu_item {
+                format!("[{}] {}", item.key, item.label)
+            } else {
+                format!("({}) {}", item.key, item.label)
+            }
+        }).collect();
+
     let menu_text = menu.join(" | ");
-    let menu_paragraph = Paragraph::new(menu_text)
+    
+    // Find the quit item
+    let quit_item = state.menu_items.iter()
+        .find(|item| item.key == 'q')
+        .map(|item| format!("({}) {}", item.key, item.label))
+        .unwrap_or_default();
+
+    // Calculate the space between menu items and quit
+    let available_width = content_area.width as usize;
+    let menu_width = menu_text.len();
+    let quit_width = quit_item.len();
+    let spacing = available_width.saturating_sub(menu_width + quit_width);
+
+    // Combine menu items, spacing, and quit item
+    let full_menu_text = format!("{}{:spacing$}{}", menu_text, "", quit_item, spacing = spacing);
+
+    let menu_paragraph = Paragraph::new(full_menu_text)
         .style(Style::default().fg(Color::Yellow));
-    f.render_widget(menu_paragraph, area);
+    f.render_widget(menu_paragraph, content_area);
 }
 
 fn draw_page_title(f: &mut Frame, state: &AppState, area: Rect) {
