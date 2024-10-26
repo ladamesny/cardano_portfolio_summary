@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         db
     });
 
-    let user_id = prompt_for_user_id(&mut database);
+    let user_id = prompt_for_user_name(&mut database);
     let user = database.get_user(&user_id).expect("User not found");
 
     let portfolio_api_config = PortfolioApiConfig::new(&user.taptools_api_key);
@@ -44,17 +44,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn prompt_for_user_id(database: &mut Database) -> String {
-    println!("Enter your user ID (leave blank to create a new user):");
-    let mut user_id = String::new();
-    std::io::stdin().read_line(&mut user_id).unwrap();
-    let user_id = user_id.trim();
+fn prompt_for_user_name(database: &mut Database) -> String {
+    println!("Enter your name:");
+    let mut name = String::new();
+    std::io::stdin().read_line(&mut name).unwrap();
+    let name = name.trim().to_string();
 
-    if user_id.is_empty() {
-        let api_key = prompt_for_api_key();
-        database.create_user(api_key)
+    if let Some(user) = database.get_user_by_name(&name) {
+        user.id.clone()
     } else {
-        user_id.to_string()
+        println!("User not found. Creating a new user.");
+        let api_key = prompt_for_api_key();
+        database.create_user(name, api_key)
     }
 }
 

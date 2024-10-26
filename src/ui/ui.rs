@@ -1,12 +1,12 @@
 use ratatui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout, Rect, Margin},
-    style::{Color, Style},
+    style::{Color, Style, Modifier},
     widgets::{Block, Borders, Paragraph, List, ListItem, ListState},
     Frame,
 };
 
-use super::state::{AppState, Page};
+use super::state::{AppState, Page, AccountFocus};
 
 pub fn draw<B: Backend>(f: &mut Frame, state: &AppState) {
     let chunks = create_main_layout(f.area());
@@ -141,14 +141,20 @@ fn draw_default_page(f: &mut Frame, state: &AppState, area: Rect) {
 }
 
 pub fn draw_account_page(f: &mut Frame, state: &AppState, area: Rect) {
-    // This area is now just the content area, between title and navigation
     let account_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Ratio(1, 3), Constraint::Ratio(2, 3)].as_ref())
         .split(area);
 
+    let left_menu_style = if state.account_focus == AccountFocus::Menu {
+        Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+    } else {
+        Style::default().fg(Color::White)
+    };
+
     let left_menu = Block::default()
         .borders(Borders::ALL)
+        .border_style(left_menu_style)
         .title("Account Menu");
 
     let items: Vec<ListItem> = state.account_menu_items
@@ -167,8 +173,15 @@ pub fn draw_account_page(f: &mut Frame, state: &AppState, area: Rect) {
     f.render_stateful_widget(list, account_chunks[0], &mut list_state);
 
     let selected_item = &state.account_menu_items[state.selected_account_menu_item];
+    let right_content_style = if state.account_focus == AccountFocus::Content {
+        Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+    } else {
+        Style::default().fg(Color::White)
+    };
+
     let right_content = Block::default()
         .borders(Borders::ALL)
+        .border_style(right_content_style)
         .title(selected_item.as_str());
     f.render_widget(right_content, account_chunks[1]);
 }

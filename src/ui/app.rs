@@ -1,4 +1,5 @@
 use crate::ui::{AppState, draw, Page};
+use super::state::AccountFocus;
 use std::io;
 use ratatui::{
     backend::{Backend, CrosstermBackend},
@@ -45,6 +46,16 @@ impl App {
                             KeyCode::Up => {
                                 if self.state.current_page() == &Page::Account {
                                     self.state.previous_account_menu_item();
+                                }
+                            },
+                            KeyCode::Enter => {
+                                if self.state.current_page() == &Page::Account && self.state.account_focus == AccountFocus::Menu {
+                                    self.state.toggle_account_focus();
+                                }
+                            },
+                            KeyCode::Esc => {
+                                if self.state.current_page() == &Page::Account && self.state.account_focus == AccountFocus::Content {
+                                    self.state.toggle_account_focus();
                                 }
                             },
                             _ => {}

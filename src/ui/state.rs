@@ -24,12 +24,19 @@ impl MenuItem {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum AccountFocus {
+    Menu,
+    Content,
+}
+
 pub struct AppState {
     pub menu_items: Vec<MenuItem>,
     pub current_menu_item: usize,
     pub portfolio_data: String,
     pub account_menu_items: Vec<String>,
     pub selected_account_menu_item: usize,
+    pub account_focus: AccountFocus,
 }
 
 impl AppState {
@@ -46,12 +53,20 @@ impl AppState {
             portfolio_data,
             account_menu_items: vec!["Profile".to_string(), "Wallets".to_string()],
             selected_account_menu_item: 0,
+            account_focus: AccountFocus::Menu,
         }
+    }
+
+    pub fn reset_account_focus(&mut self) {
+        self.account_focus = AccountFocus::Menu;
     }
 
     pub fn set_current_page(&mut self, page: Page) {
         if let Some(index) = self.menu_items.iter().position(|item| item.page == page) {
             self.current_menu_item = index;
+            if page != Page::Account {
+                self.reset_account_focus();
+            }
         }
     }
 
@@ -69,5 +84,12 @@ impl AppState {
         } else {
             self.selected_account_menu_item -= 1;
         }
+    }
+
+    pub fn toggle_account_focus(&mut self) {
+        self.account_focus = match self.account_focus {
+            AccountFocus::Menu => AccountFocus::Content,
+            AccountFocus::Content => AccountFocus::Menu,
+        };
     }
 }

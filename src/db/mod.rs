@@ -8,6 +8,7 @@ const DB_FILE_PATH: &str = "database.json";
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
     pub id: String,
+    pub name: String,
     pub taptools_api_key: String,
     pub wallets: Vec<Wallet>,
 }
@@ -43,15 +44,20 @@ impl Database {
         Ok(())
     }
 
-    pub fn create_user(&mut self, taptools_api_key: String) -> String {
+    pub fn create_user(&mut self, name: String, taptools_api_key: String) -> String {
         let id = Uuid::new_v4().to_string();
         let user = User {
             id: id.clone(),
+            name,
             taptools_api_key,
             wallets: Vec::new(),
         };
         self.users.insert(id.clone(), user);
         id
+    }
+
+    pub fn get_user_by_name(&self, name: &str) -> Option<&User> {
+        self.users.values().find(|user| user.name == name)
     }
 
     pub fn get_user(&self, id: &str) -> Option<&User> {
