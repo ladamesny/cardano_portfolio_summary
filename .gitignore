@@ -2,4 +2,4 @@
 config.json
 user_config.json
 taptools_config.json
-json_db.json
+database.json
