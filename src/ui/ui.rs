@@ -67,7 +67,7 @@ fn draw_navigation(f: &mut Frame, state: &AppState, area: Rect) {
         .filter(|(_, item)| item.key != 'q')  // Exclude 'q' from the main menu
         .map(|(index, item)| {
             if index == state.current_menu_item {
-                format!("[{}] {}", item.key, item.label)
+                format!("  {}  ", item.label)
             } else {
                 format!("({}) {}", item.key, item.label)
             }
@@ -93,6 +93,31 @@ fn draw_navigation(f: &mut Frame, state: &AppState, area: Rect) {
     let menu_paragraph = Paragraph::new(full_menu_text)
         .style(Style::default().fg(Color::Yellow));
     f.render_widget(menu_paragraph, content_area);
+
+    // Highlight the selected item
+    if let Some(selected_item) = state.menu_items.get(state.current_menu_item) {
+        if selected_item.key != 'q' {
+            let mut start_x = content_area.x;
+            for (index, item) in state.menu_items.iter().enumerate() {
+                if index == state.current_menu_item {
+                    break;
+                }
+                if item.key != 'q' {
+                    start_x += (item.label.len() + 7) as u16; // +7 for "() ", "  ", and " | "
+                }
+            }
+            let width = selected_item.label.len() as u16 + 4; // +4 for padding
+            let highlight_area = Rect {
+                x: start_x,
+                y: content_area.y,
+                width,
+                height: 1,
+            };
+            let highlight = Paragraph::new(format!("  {}  ", selected_item.label))
+                .style(Style::default().bg(Color::Rgb(128, 0, 128)).fg(Color::White));
+            f.render_widget(highlight, highlight_area);
+        }
+    }
 }
 
 fn draw_page_title(f: &mut Frame, state: &AppState, area: Rect) {
@@ -133,7 +158,7 @@ pub fn draw_account_page(f: &mut Frame, state: &AppState, area: Rect) {
 
     let list = List::new(items)
         .block(left_menu)
-        .highlight_style(Style::default().bg(Color::Rgb(50, 0, 50)).fg(Color::White))
+        .highlight_style(Style::default().bg(Color::Rgb(128, 0, 128)).fg(Color::White))
         .highlight_symbol("> ");
 
     let mut list_state = ListState::default();
