@@ -1,3 +1,5 @@
+use crate::models::user::User;
+
 #[derive(Clone, PartialEq)]
 pub enum Page {
     TopNftPositions,
@@ -32,6 +34,10 @@ pub enum AccountFocus {
 }
 
 pub struct AppState {
+    pub current_page: Page,
+    pub users: Vec<User>,
+    pub selected_user_index: usize,
+    pub selected_wallet_index: usize,
     pub menu_items: Vec<MenuItem>,
     pub focused_menu_items: Vec<MenuItem>,
     pub current_menu_item: usize,
@@ -54,6 +60,10 @@ impl AppState {
             MenuItem::new("esc", "Back", Page::Back, ""),
         ];
         AppState {
+            current_page: Page::TopNftPositions,
+            users: vec![],
+            selected_user_index: 0,
+            selected_wallet_index: 0,
             menu_items,
             focused_menu_items,
             current_menu_item: 0,
@@ -69,6 +79,7 @@ impl AppState {
     }
 
     pub fn set_current_page(&mut self, page: Page) {
+        self.current_page = page.clone();
         if let Some(index) = self.menu_items.iter().position(|item| item.page == page) {
             self.current_menu_item = index;
             if page != Page::Account {
