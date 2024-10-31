@@ -48,7 +48,7 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(portfolio_data: String) -> Self {
+    pub fn new(portfolio_data: String, user: User) -> Self {
         let menu_items = vec![
             MenuItem::new("n", "Top NFT Positions", Page::TopNftPositions, ""),
             MenuItem::new("w", "Watch List", Page::WatchList, ""),
@@ -61,7 +61,7 @@ impl AppState {
         ];
         AppState {
             current_page: Page::TopNftPositions,
-            users: vec![],
+            users: vec![user],
             selected_user_index: 0,
             selected_wallet_index: 0,
             menu_items,
@@ -94,6 +94,10 @@ impl AppState {
 
     pub fn next_account_menu_item(&mut self) {
         self.selected_account_menu_item = (self.selected_account_menu_item + 1) % self.account_menu_items.len();
+    }
+
+    pub fn current_user(&self) -> Option<&User> {
+        self.users.get(self.selected_user_index)
     }
 
     pub fn previous_account_menu_item(&mut self) {

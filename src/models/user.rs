@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use crate::models::wallet::Wallet;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
     pub id: String,
     pub name: String,

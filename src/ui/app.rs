@@ -1,4 +1,5 @@
 use crate::ui::{AppState, draw, Page};
+use crate::models::user::User;
 use std::io;
 use ratatui::{
     backend::{Backend, CrosstermBackend},
@@ -17,16 +18,16 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(portfolio_data: String) -> Self {
+    pub fn new(portfolio_data: String, user: User) -> Self {
         App {
-            state: AppState::new(portfolio_data),
+            state: AppState::new(portfolio_data, user),
         }
     }
 
     pub fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> io::Result<()> {
         loop {
             terminal.draw(|f| {
-                draw::<B>(f, &self.state);
+                draw(f, &mut self.state);
             })?;
 
             if event::poll(Duration::from_millis(250))? {

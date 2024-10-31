@@ -2,23 +2,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use uuid::Uuid;
+use crate::models::{user::User, wallet::Wallet};
 
 const DB_FILE_PATH: &str = "database.json";
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct User {
-    pub id: String,
-    pub name: String,
-    pub taptools_api_key: String,
-    pub wallets: Vec<Wallet>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Wallet {
-    pub id: String,
-    pub name: String,
-    pub addresses: Vec<String>,
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Database {

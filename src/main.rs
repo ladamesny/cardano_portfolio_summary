@@ -33,7 +33,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match portfolio_api_config.get_portfolio_data(address).await {
         Ok(data) => {
-            let mut app = App::new(data.to_string());
+            let user = database.get_user(&user_id)
+                .expect("User not found")
+                .clone();  // Clone the user to own it
+            let mut app = App::new(data.to_string(), user.clone());
             run_app(&mut app)?;
         }
         Err(e) => {

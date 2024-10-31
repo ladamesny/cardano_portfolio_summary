@@ -1,7 +1,10 @@
 mod app;
 mod state;
-mod ui;
+mod draw;
+mod pages;
+mod widgets;
 
 pub use app::{App, run_app};
 pub use state::{AppState, Page};
-pub use ui::{draw, draw_account_page};
+pub use draw::draw;
+pub use widgets::menu::Menu;
