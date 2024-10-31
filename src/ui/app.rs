@@ -46,21 +46,33 @@ impl App {
                                 } else {
                                     match code {
                                         KeyCode::Char('w') => self.state.set_current_page(Page::WatchList),
-                                        KeyCode::Char('n') => self.state.set_current_page(Page::TopNftPositions),
+                                        KeyCode::Char('p') => self.state.set_current_page(Page::Positions),
                                         KeyCode::Char('a') => self.state.set_current_page(Page::Account),
                                         KeyCode::Down | KeyCode::Char('j') => {
                                             if self.state.current_page() == &Page::Account {
                                                 self.state.next_account_menu_item();
+                                            }
+
+                                            if self.state.current_page() == &Page::Positions {
+                                                self.state.next_positions_menu_item();
                                             }
                                         },
                                         KeyCode::Up | KeyCode::Char('k') => {
                                             if self.state.current_page() == &Page::Account {
                                                 self.state.previous_account_menu_item();
                                             }
+
+                                            if self.state.current_page() == &Page::Positions {
+                                                self.state.previous_positions_menu_item();
+                                            }
                                         },
                                         KeyCode::Enter => {
                                             if self.state.current_page() == &Page::Account {
                                                 self.state.toggle_account_focus();
+                                            }
+
+                                            if self.state.current_page() == &Page::Positions {
+                                                self.state.toggle_positions_focus();
                                             }
                                         },
                                         _ => {}

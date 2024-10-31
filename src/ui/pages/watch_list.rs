@@ -6,7 +6,7 @@ use ratatui::{
 };
 use crate::ui::state::AppState;
 
-pub fn draw_watch_list_page(f: &mut Frame, state: &mut AppState, area: Rect) {
+pub fn draw_watch_list_page(f: &mut Frame, _state: &mut AppState, area: Rect) {
     let block = Block::default()
         .title("Watch List")
         .borders(Borders::ALL)

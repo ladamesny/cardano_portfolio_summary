@@ -2,7 +2,7 @@ use ratatui::{
     Frame, 
     layout::{Rect, Layout, Direction, Constraint},
     style::{Style, Color, Modifier},
-    widgets::{Block, Borders, Paragraph, List, ListItem, ListState},
+    widgets::{Block, Borders, List, ListItem, ListState},
 };
 use crate::ui::state::{AppState, AccountFocus};
 
@@ -49,41 +49,84 @@ pub fn draw_account_page(f: &mut Frame, state: &mut AppState, area: Rect) {
 
     // Profile Section
     if state.selected_account_menu_item == 0 {  // Profile section
-        if let Some(user) = state.current_user() {
-            let content_layout = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([
-                    Constraint::Percentage(50),
-                    Constraint::Percentage(50),
-                ])
-                .split(account_chunks[1]);
+        // Main "Profiles" container
+        let profiles_block = Block::default()
+            .title("Profiles")
+            .borders(Borders::ALL)
+            .border_style(right_content_style);
+        
+        let profiles_area = account_chunks[1];
+        let inner_profiles_area = profiles_block.inner(profiles_area);
 
-            // Left container - User Profile
-            let profile_block = Block::default()
-                .title("User Profile")
-                .borders(Borders::ALL)
-                .border_style(right_content_style);
-            
-            let profile_area = content_layout[0];
-            let inner_area = profile_block.inner(profile_area);
-            
-            f.render_widget(profile_block, profile_area);
-            f.render_widget(
-                Paragraph::new(user.name.clone())
-                    .style(Style::default().fg(Color::White)),
-                inner_area,
-            );
+        // Split the inner area for the two columns
+        let content_layout = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Percentage(50),
+                Constraint::Percentage(50),
+            ])
+            .split(inner_profiles_area);
 
-            // Right container - Wallets
-            let wallet_block = Block::default()
-                .title("Wallets")
-                .borders(Borders::ALL)
-                .border_style(right_content_style);
-            
-            let wallet_area = content_layout[1];
-            let inner_wallet_area = wallet_block.inner(wallet_area);
-            
-            let wallet_items: Vec<ListItem> = user.wallets
+        // Render the main profiles container
+        f.render_widget(profiles_block, profiles_area);
+
+        // Create vertical layouts for both columns with 30% height containers
+        let left_layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Percentage(30),
+                Constraint::Percentage(70),
+            ])
+            .split(content_layout[0]);
+
+        let right_layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Percentage(30),
+                Constraint::Percentage(70),
+            ])
+            .split(content_layout[1]);
+
+        // Left container - User Profiles
+        let profile_block = Block::default()
+            .title("User Profiles")
+            .borders(Borders::ALL)
+            .border_style(right_content_style);
+        
+        let inner_area = profile_block.inner(left_layout[0]);
+        
+        // Create list items for all users
+        let user_items: Vec<ListItem> = state.users
+            .iter()
+            .enumerate()
+            .map(|(index, user)| {
+                let style = if index == state.selected_user_index && state.account_focus == AccountFocus::Content {
+                    Style::default().bg(Color::Rgb(128, 0, 128)).fg(Color::White)
+                } else {
+                    Style::default().fg(Color::White)
+                };
+                ListItem::new(user.name.clone()).style(style)
+            })
+            .collect();
+        
+        f.render_widget(profile_block, left_layout[0]);
+        f.render_widget(
+            List::new(user_items)
+                .style(Style::default().fg(Color::White)),
+            inner_area,
+        );
+
+        // Right container - Wallets
+        let wallet_block = Block::default()
+            .title("Wallets")
+            .borders(Borders::ALL)
+            .border_style(right_content_style);
+        
+        let inner_wallet_area = wallet_block.inner(right_layout[0]);
+        
+        // Get wallets for the selected user
+        let wallet_items: Vec<ListItem> = if let Some(selected_user) = state.users.get(state.selected_user_index) {
+            selected_user.wallets
                 .iter()
                 .enumerate()
                 .map(|(index, w)| {
@@ -92,17 +135,20 @@ pub fn draw_account_page(f: &mut Frame, state: &mut AppState, area: Rect) {
                     } else {
                         Style::default().fg(Color::White)
                     };
-                    ListItem::new(w.name.clone()).style(style)
+                    ListItem::new(format!("{} ({})", w.name, w.addresses.join(", ")))
+                        .style(style)
                 })
-                .collect();
-            
-            f.render_widget(wallet_block, wallet_area);
-            f.render_widget(
-                List::new(wallet_items)
-                    .style(Style::default().fg(Color::White)),
-                inner_wallet_area,
-            );
-        }
+                .collect()
+        } else {
+            Vec::new()
+        };
+        
+        f.render_widget(wallet_block, right_layout[0]);
+        f.render_widget(
+            List::new(wallet_items)
+                .style(Style::default().fg(Color::White)),
+            inner_wallet_area,
+        );
     } else {
         // Other menu items just show a simple content block
         let content_block = Block::default()
@@ -110,36 +156,5 @@ pub fn draw_account_page(f: &mut Frame, state: &mut AppState, area: Rect) {
             .border_style(right_content_style)
             .title(selected_item.as_str());
         f.render_widget(content_block, account_chunks[1]);
-    }
-}
-
-pub fn handle_input(state: &mut AppState, key: char) {
-    match key {
-        'j' => {
-            if state.account_focus == AccountFocus::Menu {
-                state.next_account_menu_item();
-            } else {
-                // If in content focus, move to next wallet
-                if let Some(user) = state.current_user() {
-                    state.selected_wallet_index = (state.selected_wallet_index + 1) % user.wallets.len();
-                }
-            }
-        },
-        'k' => {
-            if state.account_focus == AccountFocus::Menu {
-                state.previous_account_menu_item();
-            } else {
-                // If in content focus, move to previous wallet
-                if let Some(user) = state.current_user() {
-                    if state.selected_wallet_index == 0 {
-                        state.selected_wallet_index = user.wallets.len() - 1;
-                    } else {
-                        state.selected_wallet_index -= 1;
-                    }
-                }
-            }
-        },
-        '\n' => state.toggle_account_focus(),
-        _ => {}
     }
 }

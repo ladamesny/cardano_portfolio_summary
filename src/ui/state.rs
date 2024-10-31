@@ -2,7 +2,7 @@ use crate::models::user::User;
 
 #[derive(Clone, PartialEq)]
 pub enum Page {
-    TopNftPositions,
+    Positions,
     WatchList,
     Account,
     Quit,
@@ -33,6 +33,12 @@ pub enum AccountFocus {
     Content,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum PositionsFocus {
+    Menu,
+    Content,
+}
+
 pub struct AppState {
     pub current_page: Page,
     pub users: Vec<User>,
@@ -45,12 +51,18 @@ pub struct AppState {
     pub account_menu_items: Vec<String>,
     pub selected_account_menu_item: usize,
     pub account_focus: AccountFocus,
+    pub positions_focus: PositionsFocus,
+    pub positions_menu_items: Vec<String>,
+    pub selected_positions_menu_item: usize,
+    pub selected_fungible_token_index: usize,
+    pub selected_nft_index: usize,
+    pub selected_liquidity_position_index: usize,
 }
 
 impl AppState {
     pub fn new(portfolio_data: String, user: User) -> Self {
         let menu_items = vec![
-            MenuItem::new("n", "Top NFT Positions", Page::TopNftPositions, ""),
+            MenuItem::new("p", "Crypto Positions", Page::Positions, ""),
             MenuItem::new("w", "Watch List", Page::WatchList, ""),
             MenuItem::new("a", "Account", Page::Account, ""),
             MenuItem::new("q", "Quit", Page::Quit, ""),
@@ -60,7 +72,7 @@ impl AppState {
             MenuItem::new("esc", "Back", Page::Back, ""),
         ];
         AppState {
-            current_page: Page::TopNftPositions,
+            current_page: Page::Positions,
             users: vec![user],
             selected_user_index: 0,
             selected_wallet_index: 0,
@@ -68,9 +80,23 @@ impl AppState {
             focused_menu_items,
             current_menu_item: 0,
             portfolio_data,
-            account_menu_items: vec!["Profile".to_string(), "Wallets".to_string()],
+            account_menu_items: vec![
+                "Profile".to_string(),
+                "Wallets".to_string(),
+                "Settings".to_string(),
+            ],
             selected_account_menu_item: 0,
             account_focus: AccountFocus::Menu,
+            positions_focus: PositionsFocus::Menu,
+            positions_menu_items: vec![
+                "Fungible Tokens".to_string(),
+                "Non-Fungible Tokens".to_string(),
+                "Liquidity Positions".to_string(),
+            ],
+            selected_positions_menu_item: 0,
+            selected_fungible_token_index: 0,
+            selected_nft_index: 0,
+            selected_liquidity_position_index: 0,
         }
     }
 
@@ -121,5 +147,24 @@ impl AppState {
             // Add other pages here when they have a content focus
             _ => false,
         }
+    }
+
+    pub fn next_positions_menu_item(&mut self) {
+        self.selected_positions_menu_item = (self.selected_positions_menu_item + 1) % self.positions_menu_items.len();
+    }
+
+    pub fn previous_positions_menu_item(&mut self) {
+        if self.selected_positions_menu_item == 0 {
+            self.selected_positions_menu_item = self.positions_menu_items.len() - 1;
+        } else {
+            self.selected_positions_menu_item -= 1;
+        }
+    }
+
+    pub fn toggle_positions_focus(&mut self) {
+        self.positions_focus = match self.positions_focus {
+            PositionsFocus::Menu => PositionsFocus::Content,
+            PositionsFocus::Content => PositionsFocus::Menu,
+        };
     }
 }

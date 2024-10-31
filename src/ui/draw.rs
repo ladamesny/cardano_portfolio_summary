@@ -7,7 +7,7 @@ use ratatui::{
 
 use crate::ui::{
     state::{AppState, Page},
-    pages::{account, top_nft_positions, watch_list, common::{LayoutChunks, create_main_layout}},
+    pages::{account, positions, watch_list, common::create_main_layout},
 };
 
 pub fn draw(f: &mut Frame, state: &mut AppState) {
@@ -19,7 +19,7 @@ pub fn draw(f: &mut Frame, state: &mut AppState) {
     // Draw the current page in the main content area
     match state.current_page {
         Page::Account => account::draw_account_page(f, state, chunks.content),
-        Page::TopNftPositions => top_nft_positions::draw_top_nft_positions_page(f, state, chunks.content),
+        Page::Positions => positions::draw_positions_page(f, state, chunks.content),
         Page::WatchList => watch_list::draw_watch_list_page(f, state, chunks.content),
         _ => {},
     }
