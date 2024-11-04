@@ -79,6 +79,7 @@ impl AppState {
             MenuItem::new("p", "Crypto Positions", Page::Positions, ""),
             MenuItem::new("w", "Watch List", Page::WatchList, ""),
             MenuItem::new("a", "Account", Page::Account, ""),
+            MenuItem::new("r", "Refresh", Page::Positions, ""),
             MenuItem::new("q", "Quit", Page::Quit, ""),
         ];
 
@@ -187,5 +188,16 @@ impl AppState {
             PositionsFocus::Menu => PositionsFocus::Content,
             PositionsFocus::Content => PositionsFocus::Menu,
         };
+    }
+
+    pub fn update_portfolio(&mut self, portfolio_json: String) {
+        if let Ok(portfolio) = serde_json::from_str::<PortfolioSummary>(&portfolio_json) {
+            self.positions_ft = portfolio.positions_ft;
+            self.positions_nft = portfolio.positions_nft;
+            self.positions_lp = portfolio.positions_lp;
+            self.ada_balance = portfolio.ada_balance;
+            self.ada_value = portfolio.ada_value;
+            self.liquid_value = portfolio.liquid_value;
+        }
     }
 }

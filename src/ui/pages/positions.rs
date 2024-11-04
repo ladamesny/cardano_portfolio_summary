@@ -11,16 +11,16 @@ use crate::ui::state::{AppState, PositionsFocus};
 pub fn draw_positions_page(f: &mut Frame, state: &mut AppState, area: Rect) {
     // Format the ADA info for the title
     let ada_info = format!(
-        "ADA Balance: ₳{:.2} | Value: ₳{:.2}",
-        state.ada_balance,
-        state.ada_value
+        "ADA Balance: {} | Value: {}",
+        format_ada(state.ada_balance, 2),
+        format_ada(state.ada_value, 2)
     );
 
     // Create the main block with combined title
     let main_block = Block::default()
         .borders(Borders::ALL)
         .title(Span::styled(
-            format!("Positions{:>width$}", ada_info, width = area.width as usize - 10), // The -10 provides some padding
+            format!("Positions{:>width$}", ada_info, width = area.width as usize - 10),
             Style::default().fg(Color::White)
         ));
 

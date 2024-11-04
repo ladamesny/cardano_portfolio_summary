@@ -1,6 +1,8 @@
 use crate::ui::{AppState, draw, Page};
 use crate::models::user::User;
+use crate::services::user_service::UserService;
 use std::io;
+use std::sync::Arc;
 use ratatui::{
     backend::{Backend, CrosstermBackend},
     Terminal,
@@ -15,16 +17,18 @@ use std::time::Duration;
 
 pub struct App {
     pub state: AppState,
+    pub user_service: UserService,
 }
 
 impl App {
-    pub fn new(portfolio_data: String, user: User) -> Self {
+    pub fn new(portfolio_data: String, user: User, user_service: UserService) -> Self {
         App {
             state: AppState::new(portfolio_data, user),
+            user_service,
         }
     }
 
-    pub fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> io::Result<()> {
+    pub async fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> io::Result<()> {
         loop {
             terminal.draw(|f| {
                 draw(f, &mut self.state);
@@ -45,6 +49,13 @@ impl App {
                                     // Handle content-specific actions
                                 } else {
                                     match code {
+                                        KeyCode::Char('r') => {
+                                            if self.state.current_page() == &Page::Positions {
+                                                if let Ok(new_data) = self.user_service.fetch_portfolio_data().await {
+                                                    self.state.update_portfolio(new_data);
+                                                }
+                                            }
+                                        },
                                         KeyCode::Char('w') => self.state.set_current_page(Page::WatchList),
                                         KeyCode::Char('p') => self.state.set_current_page(Page::Positions),
                                         KeyCode::Char('a') => self.state.set_current_page(Page::Account),
@@ -88,14 +99,14 @@ impl App {
     }
 }
 
-pub fn run_app(app: &mut App) -> io::Result<()> {
+pub async fn run_app(app: &mut App) -> io::Result<()> {
     enable_raw_mode()?;
     let mut stdout = stdout();
     execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let result = app.run(&mut terminal);
+    let result = app.run(&mut terminal).await;
 
     disable_raw_mode()?;
     execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
