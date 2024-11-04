@@ -120,9 +120,9 @@ pub fn draw_ft_positions(f: &mut Frame, state: &AppState, area: Rect) {
 
         let row_cells = vec![
             Cell::from(position.ticker.clone()),
-            Cell::from(format!("{:.2}", position.balance)),
-            Cell::from(format!("₳{:.2}", position.ada_value)),
-            Cell::from(format!("₳{:.4}", position.price.unwrap_or(0.0))),
+            Cell::from(format_number(position.balance, 2)),
+            Cell::from(format_ada(position.ada_value, 2)),
+            Cell::from(format_ada(position.price.unwrap_or(0.0), 4)),
             Cell::from(format_change(change_24h)),
             Cell::from(format_change(change_7d)),
             Cell::from(format_change(change_30d)),
@@ -183,9 +183,9 @@ pub fn draw_nft_positions(f: &mut Frame, state: &AppState, area: Rect) {
 
         let row_cells = vec![
             Cell::from(position.name.clone()),
-            Cell::from(format!("{:.0}", position.balance)),
-            Cell::from(format!("₳{:.2}", position.floor_price)),
-            Cell::from(format!("₳{:.2}", position.ada_value)),
+            Cell::from(format_number(position.balance as f64, 0)),
+            Cell::from(format_ada(position.floor_price, 2)),
+            Cell::from(format_ada(position.ada_value, 2)),
             Cell::from(format_change(change_24h)),
             Cell::from(format_change(change_7d)),
             Cell::from(format_change(change_30d)),
@@ -243,10 +243,10 @@ pub fn draw_lp_positions(f: &mut Frame, state: &AppState, area: Rect) {
         let row_cells = vec![
             Cell::from(format!("{} ({})", position.exchange, position.ticker)),
             Cell::from(position.token_a_name.clone()),
-            Cell::from(format!("{:.2}", position.token_a_amount)),
+            Cell::from(format_number(position.token_a_amount, 2)),
             Cell::from(position.token_b_name.clone()),
-            Cell::from(format!("{:.2}", position.token_b_amount)),
-            Cell::from(format!("₳{:.2}", position.ada_value)),
+            Cell::from(format_number(position.token_b_amount, 2)),
+            Cell::from(format_ada(position.ada_value, 2)),
         ];
 
         Row::new(row_cells)
@@ -285,4 +285,33 @@ fn format_change(change: f64) -> Span<'static> {
     };
     
     Span::styled(formatted, Style::default().fg(color))
+}
+
+// Helper function to format numbers with commas and decimals
+fn format_number(value: f64, decimals: usize) -> String {
+    let whole = value.trunc() as i64;
+    let decimal = (value.fract() * 10f64.powi(decimals as i32)).abs().round();
+    
+    let whole_formatted = whole.to_string()
+        .chars()
+        .rev()
+        .collect::<Vec<char>>()
+        .chunks(3)
+        .map(|chunk| chunk.iter().collect::<String>())
+        .collect::<Vec<String>>()
+        .join(",")
+        .chars()
+        .rev()
+        .collect::<String>();
+        
+    if decimals > 0 {
+        format!("{}.{:0width$}", whole_formatted, decimal as i64, width = decimals)
+    } else {
+        whole_formatted
+    }
+}
+
+// Helper function to format ADA values
+fn format_ada(value: f64, decimals: usize) -> String {
+    format!("₳{}", format_number(value, decimals))
 }
