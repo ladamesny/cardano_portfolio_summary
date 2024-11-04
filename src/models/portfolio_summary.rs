@@ -7,21 +7,21 @@ use super::lp_position::LpPosition;
 #[derive(Deserialize, Serialize, Debug)]
 pub struct PortfolioSummary {
     #[serde(rename = "adaBalance")]
-    ada_balance: Option<f64>,
+    pub ada_balance: f64,
     #[serde(rename = "adaValue")]
-    ada_value: Option<f64>,
+    pub ada_value: f64,
     #[serde(rename = "liquidValue")]
-    liquid_value: Option<f64>,
+    pub liquid_value: f64,
     #[serde(rename = "numFTs")]
-    num_fts: Option<u32>, 
+    pub num_fts: u32,
     #[serde(rename = "numNFTs")]
-    num_nfts: Option<u32>,
+    pub num_nfts: u32,
     #[serde(rename = "positionsFt")]
-    positions_ft: Option<Vec<FtPosition>>,
+    pub positions_ft: Vec<FtPosition>,
     #[serde(rename = "positionsLp")]
-    positions_lp: Option<Vec<LpPosition>>,
+    pub positions_lp: Vec<LpPosition>,
     #[serde(rename = "positionsNft")]
-    positions_nft: Option<Vec<NftPosition>>,
+    pub positions_nft: Vec<NftPosition>,
 }
 
 impl fmt::Display for PortfolioSummary {

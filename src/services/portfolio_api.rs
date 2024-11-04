@@ -19,16 +19,25 @@ impl PortfolioApiConfig {
     }
 
     // Fetch portfolio data
-    pub async fn get_portfolio_data(&self, address: &str) -> Result<PortfolioSummary, reqwest::Error> {
-        let url = format!("{}{}?address={}", PORTFOLIO_API_HOST, WALLET_POSITIONS_URL, address);
-        self.make_portfolio_api_request(&url).await?.json::<PortfolioSummary>().await
+    pub async fn get_portfolio_data(&self, address: &str) -> Result<String, reqwest::Error> {
+        let response = self.make_portfolio_api_request(address).await?;
+        let text = response.text().await?;
+        Ok(text)
     }
 
     // Internal function to make PortfolioApi API requests
-    async fn make_portfolio_api_request(&self, url: &str) -> Result<reqwest::Response, reqwest::Error> {
+    async fn make_portfolio_api_request(&self, address: &str) -> Result<reqwest::Response, reqwest::Error> {
+        let url = format!("https://openapi.taptools.io/api/v1/wallet/portfolio/positions?address={}", address);
+        
         let client = Client::new();
-        let mut headers = HeaderMap::new();
-        headers.insert("x-api-key", HeaderValue::from_str(self.api_key.as_str()).unwrap());
-        client.get(url).headers(headers).send().await
+        let response = client
+            .get(&url)
+            .header("x-api-key", &self.api_key)
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .send()
+            .await?;
+        
+        Ok(response)
     }
 }

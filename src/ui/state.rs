@@ -1,4 +1,10 @@
 use crate::models::user::User;
+use crate::models::{
+    ft_position::FtPosition,
+    nft_position::NftPosition,
+    lp_position::LpPosition,
+    portfolio_summary::PortfolioSummary,
+};
 
 #[derive(Clone, PartialEq)]
 pub enum Page {
@@ -47,7 +53,12 @@ pub struct AppState {
     pub menu_items: Vec<MenuItem>,
     pub focused_menu_items: Vec<MenuItem>,
     pub current_menu_item: usize,
-    pub portfolio_data: String,
+    pub positions_ft: Vec<FtPosition>,
+    pub positions_nft: Vec<NftPosition>,
+    pub positions_lp: Vec<LpPosition>,
+    pub ada_balance: f64,
+    pub ada_value: f64,
+    pub liquid_value: f64,
     pub account_menu_items: Vec<String>,
     pub selected_account_menu_item: usize,
     pub account_focus: AccountFocus,
@@ -60,17 +71,22 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(portfolio_data: String, user: User) -> Self {
+    pub fn new(portfolio_json: String, user: User) -> Self {
+        let portfolio: PortfolioSummary = serde_json::from_str(&portfolio_json)
+            .expect("Failed to parse portfolio data");
+
         let menu_items = vec![
             MenuItem::new("p", "Crypto Positions", Page::Positions, ""),
             MenuItem::new("w", "Watch List", Page::WatchList, ""),
             MenuItem::new("a", "Account", Page::Account, ""),
             MenuItem::new("q", "Quit", Page::Quit, ""),
         ];
+
         let focused_menu_items = vec![
             MenuItem::new("q", "Quit", Page::Quit, ""),
             MenuItem::new("esc", "Back", Page::Back, ""),
         ];
+
         AppState {
             current_page: Page::Positions,
             users: vec![user],
@@ -79,7 +95,12 @@ impl AppState {
             menu_items,
             focused_menu_items,
             current_menu_item: 0,
-            portfolio_data,
+            positions_ft: portfolio.positions_ft,
+            positions_nft: portfolio.positions_nft,
+            positions_lp: portfolio.positions_lp,
+            ada_balance: portfolio.ada_balance,
+            ada_value: portfolio.ada_value,
+            liquid_value: portfolio.liquid_value,
             account_menu_items: vec![
                 "Profile".to_string(),
                 "Wallets".to_string(),

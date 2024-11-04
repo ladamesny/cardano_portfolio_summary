@@ -35,12 +35,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(data) => {
             let user = database.get_user(&user_id)
                 .expect("User not found")
-                .clone();  // Clone the user to own it
+                .clone();
+            
             let mut app = App::new(data.to_string(), user.clone());
             run_app(&mut app)?;
         }
         Err(e) => {
-            eprintln!("Error: {:?}", e);
+            eprintln!("API Error: {:?}", e);
         }
     }
 
