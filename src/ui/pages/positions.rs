@@ -82,8 +82,8 @@ pub fn draw_positions_page(f: &mut Frame, state: &mut AppState, area: Rect) {
     f.render_widget(&content_block, chunks[1]);
     match state.selected_positions_menu_item {
         0 => draw_ft_positions(f, state, chunks[1].inner(margin)),
-        // 1 => draw_nft_positions(f, state, chunks[1].inner()),
-        // 2 => draw_lp_positions(f, state, chunks[1].inner()),
+        1 => draw_nft_positions(f, state, chunks[1].inner(margin)),
+        2 => draw_lp_positions(f, state, chunks[1].inner(margin)),
         _ => unreachable!(),
     };
 }
@@ -115,7 +115,7 @@ pub fn draw_ft_positions(f: &mut Frame, state: &AppState, area: Rect) {
         let row_style = if index % 2 == 0 {
             Style::default()
         } else {
-            Style::default().bg(highlight_color).fg(Color::White)
+            Style::default().bg(Color::Rgb(25, 0, 25)).fg(Color::White)
         };
 
         let row_cells = vec![
@@ -145,9 +145,127 @@ pub fn draw_ft_positions(f: &mut Frame, state: &AppState, area: Rect) {
 
     let table = Table::new(rows, widths)
         .header(header)
-        .block(Block::default()
-            .borders(Borders::ALL)
-        )
+        .block(Block::default())
+        .column_spacing(1)
+        .highlight_style(Style::default().add_modifier(Modifier::BOLD))
+        .highlight_symbol(">> ");
+
+    f.render_widget(table, area);
+}
+
+pub fn draw_nft_positions(f: &mut Frame, state: &AppState, area: Rect) {
+    let highlight_color = Color::Rgb(128, 0, 128);
+    
+    let header_cells = ["Name", "Balance", "Floor Price", "ADA Value", "24h %", "7d %", "30d %"]
+        .iter()
+        .map(|h| {
+            Cell::from(h.to_uppercase())
+                .style(Style::default()
+                    .bg(highlight_color)
+                    .fg(Color::White)
+                    .add_modifier(Modifier::BOLD))
+        });
+    
+    let header = Row::new(header_cells)
+        .style(Style::default())
+        .height(2);
+
+    let rows = state.positions_nft.iter().enumerate().map(|(index, position)| {
+        let change_24h = position.change_24h.unwrap_or(0.0) * 100.0;
+        let change_7d = position.change_7d.unwrap_or(0.0) * 100.0;
+        let change_30d = position.change_30d.unwrap_or(0.0) * 100.0;
+
+        let row_style = if index % 2 == 0 {
+            Style::default()
+        } else {
+            Style::default().bg(Color::Rgb(25, 0, 25))
+        };
+
+        let row_cells = vec![
+            Cell::from(position.name.clone()),
+            Cell::from(format!("{:.0}", position.balance)),
+            Cell::from(format!("₳{:.2}", position.floor_price)),
+            Cell::from(format!("₳{:.2}", position.ada_value)),
+            Cell::from(format_change(change_24h)),
+            Cell::from(format_change(change_7d)),
+            Cell::from(format_change(change_30d)),
+        ];
+
+        Row::new(row_cells)
+            .style(row_style)
+            .height(2)
+    });
+
+    let widths = [
+        Constraint::Percentage(25),  // Name
+        Constraint::Percentage(10),  // Balance
+        Constraint::Percentage(15),  // Floor Price
+        Constraint::Percentage(15),  // ADA Value
+        Constraint::Percentage(10),  // 24h
+        Constraint::Percentage(10),  // 7d
+        Constraint::Percentage(15),  // 30d
+    ];
+
+    let table = Table::new(rows, widths)
+        .header(header)
+        .block(Block::default())
+        .column_spacing(1)
+        .highlight_style(Style::default().add_modifier(Modifier::BOLD))
+        .highlight_symbol(">> ");
+
+    f.render_widget(table, area);
+}
+
+pub fn draw_lp_positions(f: &mut Frame, state: &AppState, area: Rect) {
+    let highlight_color = Color::Rgb(128, 0, 128);
+    
+    let header_cells = ["Pool", "Token A", "Amount A", "Token B", "Amount B", "ADA Value"]
+        .iter()
+        .map(|h| {
+            Cell::from(h.to_uppercase())
+                .style(Style::default()
+                    .bg(highlight_color)
+                    .fg(Color::White)
+                    .add_modifier(Modifier::BOLD))
+        });
+    
+    let header = Row::new(header_cells)
+        .style(Style::default())
+        .height(2);
+
+    let rows = state.positions_lp.iter().enumerate().map(|(index, position)| {
+        let row_style = if index % 2 == 0 {
+            Style::default()
+        } else {
+            Style::default().bg(Color::Rgb(25, 0, 25))
+        };
+
+        let row_cells = vec![
+            Cell::from(format!("{} ({})", position.exchange, position.ticker)),
+            Cell::from(position.token_a_name.clone()),
+            Cell::from(format!("{:.2}", position.token_a_amount)),
+            Cell::from(position.token_b_name.clone()),
+            Cell::from(format!("{:.2}", position.token_b_amount)),
+            Cell::from(format!("₳{:.2}", position.ada_value)),
+        ];
+
+        Row::new(row_cells)
+            .style(row_style)
+            .height(2)
+    });
+
+    let widths = [
+        Constraint::Percentage(20),  // Pool
+        Constraint::Percentage(15),  // Token A
+        Constraint::Percentage(15),  // Amount A
+        Constraint::Percentage(15),  // Token B
+        Constraint::Percentage(15),  // Amount B
+        Constraint::Percentage(20),  // ADA Value
+    ];
+
+    let table = Table::new(rows, widths)
+        .header(header)
+        .block(Block::default())
         .column_spacing(1)
         .highlight_style(Style::default().add_modifier(Modifier::BOLD))
         .highlight_symbol(">> ");
