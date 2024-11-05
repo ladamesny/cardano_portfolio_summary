@@ -63,18 +63,37 @@ fn draw_navigation(f: &mut Frame, state: &AppState, area: Rect) {
         .find(|item| item.key == "q")
         .map(|item| format!("({}) {}", item.key, item.label))
         .unwrap_or_default();
-    let refresh_item = menu_items.iter()
-        .find(|item| item.key == "r")
-        .map(|item| format!("({}) {}", item.key, item.label))
-        .unwrap_or_default();
+
+    // Only show refresh when on positions page or market caps menu
+    let refresh_item = if state.current_page == Page::Positions 
+        || (state.current_page == Page::WatchList && state.selected_watch_list_menu_item == 2) {
+        menu_items.iter()
+            .find(|item| item.key == "r")
+            .map(|item| format!("({}) {}", item.key, item.label))
+            .unwrap_or_default()
+    } else {
+        String::new()
+    };
 
     let available_width = content_area.width as usize;
     let menu_width = menu_text.len();
     let quit_width = quit_item.len();
-    let refresh_width = refresh_item.len();
+    
+    // Only calculate refresh width when the item should be shown
+    let refresh_width = if state.current_page == Page::Positions 
+        || (state.current_page == Page::WatchList && state.selected_watch_list_menu_item == 2) {
+        refresh_item.len() + 1  // Add 1 for the space between refresh and quit
+    } else {
+        0
+    };
+    
     let spacing = available_width.saturating_sub(menu_width + quit_width + refresh_width);
 
-    let full_menu_text = format!("{}{:spacing$}{}{}{}", menu_text, "", refresh_item, " ", quit_item, spacing = spacing);
+    let full_menu_text = if !refresh_item.is_empty() {
+        format!("{}{:spacing$}{} {}", menu_text, "", refresh_item, quit_item, spacing = spacing)
+    } else {
+        format!("{}{:spacing$}{}", menu_text, "", quit_item, spacing = spacing)
+    };
 
     let menu_paragraph = Paragraph::new(full_menu_text)
         .style(Style::default().fg(Color::Yellow));
