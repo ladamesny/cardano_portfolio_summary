@@ -225,4 +225,11 @@ impl AppState {
             self.selected_watch_list_menu_item = 2;
         }
     }
+
+    pub fn toggle_watch_list_focus(&mut self) {
+        self.watch_list_focus = match self.watch_list_focus {
+            WatchListFocus::Menu => WatchListFocus::Content,
+            WatchListFocus::Content => WatchListFocus::Menu,
+        };
+    }
 }

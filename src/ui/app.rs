@@ -1,4 +1,13 @@
-use crate::ui::{AppState, draw, Page};
+use crate::ui::{
+    AppState, 
+    draw, 
+    Page,
+    state::{
+        PositionsFocus,
+        WatchListFocus,
+        AccountFocus,
+    }
+};
 use crate::models::user::User;
 use crate::services::user_service::UserService;
 use std::io;
@@ -39,7 +48,18 @@ impl App {
                         match code {
                             KeyCode::Char('q') => return Ok(()),
                             KeyCode::Esc => {
-                                if self.state.is_content_focused() {
+                                if self.state.current_page() == &Page::Positions 
+                                    && self.state.positions_focus == PositionsFocus::Content {
+                                    self.state.toggle_positions_focus();
+                                }
+
+                                if self.state.current_page() == &Page::WatchList 
+                                    && self.state.watch_list_focus == WatchListFocus::Content {
+                                    self.state.toggle_watch_list_focus();
+                                }
+
+                                if self.state.current_page() == &Page::Account 
+                                    && self.state.account_focus == AccountFocus::Content {
                                     self.state.toggle_account_focus();
                                 }
                             },
@@ -90,8 +110,14 @@ impl App {
                                                 self.state.toggle_account_focus();
                                             }
 
-                                            if self.state.current_page() == &Page::Positions {
+                                            if self.state.current_page() == &Page::Positions 
+                                                && self.state.positions_focus == PositionsFocus::Menu {
                                                 self.state.toggle_positions_focus();
+                                            }
+
+                                            if self.state.current_page() == &Page::WatchList 
+                                                && self.state.watch_list_focus == WatchListFocus::Menu {
+                                                self.state.toggle_watch_list_focus();
                                             }
                                         },
                                         _ => {}
