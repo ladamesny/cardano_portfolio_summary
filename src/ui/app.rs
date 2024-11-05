@@ -2,7 +2,6 @@ use crate::ui::{AppState, draw, Page};
 use crate::models::user::User;
 use crate::services::user_service::UserService;
 use std::io;
-use std::sync::Arc;
 use ratatui::{
     backend::{Backend, CrosstermBackend},
     Terminal,
@@ -70,6 +69,7 @@ impl App {
 
                                             if self.state.current_page() == &Page::WatchList {
                                                 self.state.next_watch_list_menu_item();
+                                                self.handle_watch_list_navigation().await;
                                             }
                                         },
                                         KeyCode::Up | KeyCode::Char('k') => {
@@ -101,6 +101,19 @@ impl App {
                         }
                     }
                     _ => {}
+                }
+            }
+        }
+    }
+
+    async fn handle_watch_list_navigation(&mut self) {
+        if self.state.selected_watch_list_menu_item == 2 {  // Market Caps index
+            match self.user_service.get_market_cap_data().await {
+                Ok(tokens) => {
+                    self.state.market_cap_tokens = tokens;
+                }
+                Err(e) => {
+                    eprintln!("Failed to fetch market cap data: {}", e);
                 }
             }
         }

@@ -7,6 +7,7 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState, Cell, Row, Table},
 };
 use crate::ui::state::{AppState, PositionsFocus};
+use crate::utils::formatting::{format_ada, format_number, format_change};
 
 pub fn draw_positions_page(f: &mut Frame, state: &mut AppState, area: Rect) {
     // Format the ADA info for the title
@@ -271,47 +272,4 @@ pub fn draw_lp_positions(f: &mut Frame, state: &AppState, area: Rect) {
         .highlight_symbol(">> ");
 
     f.render_widget(table, area);
-}
-
-// Helper function to format percentage changes with colors
-fn format_change(change: f64) -> Span<'static> {
-    let formatted = format!("{:+.2}%", change);
-    let color = if change > 0.0 {
-        Color::Green
-    } else if change < 0.0 {
-        Color::Red
-    } else {
-        Color::White
-    };
-    
-    Span::styled(formatted, Style::default().fg(color))
-}
-
-// Helper function to format numbers with commas and decimals
-fn format_number(value: f64, decimals: usize) -> String {
-    let whole = value.trunc() as i64;
-    let decimal = (value.fract() * 10f64.powi(decimals as i32)).abs().round();
-    
-    let whole_formatted = whole.to_string()
-        .chars()
-        .rev()
-        .collect::<Vec<char>>()
-        .chunks(3)
-        .map(|chunk| chunk.iter().collect::<String>())
-        .collect::<Vec<String>>()
-        .join(",")
-        .chars()
-        .rev()
-        .collect::<String>();
-        
-    if decimals > 0 {
-        format!("{}.{:0width$}", whole_formatted, decimal as i64, width = decimals)
-    } else {
-        whole_formatted
-    }
-}
-
-// Helper function to format ADA values
-fn format_ada(value: f64, decimals: usize) -> String {
-    format!("₳{}", format_number(value, decimals))
 }

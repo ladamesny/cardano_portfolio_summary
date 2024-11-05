@@ -1,6 +1,7 @@
 use crate::db::Database;
 use crate::models::user::User;
 use crate::services::portfolio_api::PortfolioApiConfig;
+use crate::models::market_cap_token::MarketCapToken;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -53,5 +54,15 @@ impl UserService {
 
     pub fn get_database(&self) -> Arc<Mutex<Database>> {
         self.database.clone()
+    }
+
+    pub async fn get_market_cap_data(&self) -> Result<Vec<MarketCapToken>, Box<dyn std::error::Error>> {
+        let portfolio_api = self.portfolio_api.lock().await;
+        
+        if let Some(api) = portfolio_api.as_ref() {
+            Ok(api.get_market_cap_data().await?)
+        } else {
+            Err("Not logged in".into())
+        }
     }
 }

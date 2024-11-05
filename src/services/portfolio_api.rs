@@ -1,10 +1,10 @@
-use reqwest::{Client, header::{HeaderMap, HeaderValue}};
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
-
-use crate::models::portfolio_summary::PortfolioSummary;
+use crate::models::market_cap_token::MarketCapToken;
 
 const PORTFOLIO_API_HOST: &str = "https://openapi.taptools.io/api/v1";
 const WALLET_POSITIONS_URL: &str = "/wallet/portfolio/positions";
+const MARKET_CAP_URL: &str = "/token/top/mcap";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PortfolioApiConfig {
@@ -27,7 +27,7 @@ impl PortfolioApiConfig {
 
     // Internal function to make PortfolioApi API requests
     async fn make_portfolio_api_request(&self, address: &str) -> Result<reqwest::Response, reqwest::Error> {
-        let url = format!("https://openapi.taptools.io/api/v1/wallet/portfolio/positions?address={}", address);
+        let url = format!("{}{}?address={}", PORTFOLIO_API_HOST, WALLET_POSITIONS_URL, address);
         
         let client = Client::new();
         let response = client
@@ -39,5 +39,20 @@ impl PortfolioApiConfig {
             .await?;
         
         Ok(response)
+    }
+
+    pub async fn get_market_cap_data(&self) -> Result<Vec<MarketCapToken>, reqwest::Error> {
+        let url = format!("{}{}", PORTFOLIO_API_HOST, MARKET_CAP_URL);
+        
+        let client = Client::new();
+        let response = client
+            .get(&url)
+            .header("x-api-key", &self.api_key)
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .send()
+            .await?;
+            
+        response.json::<Vec<MarketCapToken>>().await
     }
 }

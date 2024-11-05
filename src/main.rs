@@ -2,6 +2,7 @@ mod db;
 mod models;
 mod services;
 mod ui;
+mod utils;
 
 use db::Database;
 use services::user_service::UserService;

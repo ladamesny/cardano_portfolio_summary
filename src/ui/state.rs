@@ -5,6 +5,7 @@ use crate::models::{
     lp_position::LpPosition,
     portfolio_summary::PortfolioSummary,
 };
+use crate::models::market_cap_token::MarketCapToken;
 
 #[derive(Clone, PartialEq)]
 pub enum Page {
@@ -76,6 +77,7 @@ pub struct AppState {
     pub selected_liquidity_position_index: usize,
     pub watch_list_focus: WatchListFocus,
     pub selected_watch_list_menu_item: usize,
+    pub market_cap_tokens: Vec<MarketCapToken>,
 }
 
 impl AppState {
@@ -129,6 +131,7 @@ impl AppState {
             selected_liquidity_position_index: 0,
             watch_list_focus: WatchListFocus::Menu,
             selected_watch_list_menu_item: 0,
+            market_cap_tokens: Vec::new(),
         }
     }
 
@@ -212,14 +215,14 @@ impl AppState {
     }
 
     pub fn next_watch_list_menu_item(&mut self) {
-        self.selected_watch_list_menu_item = (self.selected_watch_list_menu_item + 1) % 2;
+        self.selected_watch_list_menu_item = (self.selected_watch_list_menu_item + 1) % 3;
     }
 
     pub fn previous_watch_list_menu_item(&mut self) {
         if self.selected_watch_list_menu_item > 0 {
             self.selected_watch_list_menu_item -= 1;
         } else {
-            self.selected_watch_list_menu_item = 1;
+            self.selected_watch_list_menu_item = 2;
         }
     }
 }
