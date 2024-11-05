@@ -47,8 +47,8 @@ fn draw_navigation(f: &mut Frame, state: &AppState, area: Rect) {
         &state.menu_items
     };
 
-    let mut menu: Vec<String> = menu_items.iter().enumerate()
-        .filter(|(_, item)| item.key != "q")
+    let menu: Vec<String> = menu_items.iter().enumerate()
+        .filter(|(_, item)| item.key != "q" && item.key != "r")
         .map(|(index, item)| {
             if index == state.current_menu_item && !state.is_content_focused() {
                 format!("  {}  ", item.label)
@@ -63,13 +63,18 @@ fn draw_navigation(f: &mut Frame, state: &AppState, area: Rect) {
         .find(|item| item.key == "q")
         .map(|item| format!("({}) {}", item.key, item.label))
         .unwrap_or_default();
+    let refresh_item = menu_items.iter()
+        .find(|item| item.key == "r")
+        .map(|item| format!("({}) {}", item.key, item.label))
+        .unwrap_or_default();
 
     let available_width = content_area.width as usize;
     let menu_width = menu_text.len();
     let quit_width = quit_item.len();
-    let spacing = available_width.saturating_sub(menu_width + quit_width);
+    let refresh_width = refresh_item.len();
+    let spacing = available_width.saturating_sub(menu_width + quit_width + refresh_width);
 
-    let full_menu_text = format!("{}{:spacing$}{}", menu_text, "", quit_item, spacing = spacing);
+    let full_menu_text = format!("{}{:spacing$}{}{}{}", menu_text, "", refresh_item, " ", quit_item, spacing = spacing);
 
     let menu_paragraph = Paragraph::new(full_menu_text)
         .style(Style::default().fg(Color::Yellow));
@@ -77,13 +82,13 @@ fn draw_navigation(f: &mut Frame, state: &AppState, area: Rect) {
 
     if !state.is_content_focused() {
         if let Some(selected_item) = menu_items.get(state.current_menu_item) {
-            if selected_item.key != "q" {
+            if selected_item.key != "q" && selected_item.key != "r" {
                 let mut start_x = content_area.x;
                 for (index, item) in menu_items.iter().enumerate() {
                     if index == state.current_menu_item {
                         break;
                     }
-                    if item.key != "q" {
+                    if item.key != "q" && item.key != "r" {
                         start_x += (item.label.len() + 7) as u16;
                     }
                 }

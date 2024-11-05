@@ -74,6 +74,13 @@ impl App {
                                                     self.state.update_portfolio(new_data);
                                                 }
                                             }
+                                            
+                                            if self.state.current_page() == &Page::WatchList 
+                                                && self.state.selected_watch_list_menu_item == 2 { // Market Caps menu item
+                                                if let Ok(tokens) = self.user_service.get_market_cap_data().await {
+                                                    self.state.market_cap_tokens = tokens;
+                                                }
+                                            }
                                         },
                                         KeyCode::Char('w') => self.state.set_current_page(Page::WatchList),
                                         KeyCode::Char('p') => self.state.set_current_page(Page::Positions),
