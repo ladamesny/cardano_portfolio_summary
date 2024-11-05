@@ -157,10 +157,6 @@ impl AppState {
         self.selected_account_menu_item = (self.selected_account_menu_item + 1) % self.account_menu_items.len();
     }
 
-    pub fn current_user(&self) -> Option<&User> {
-        self.users.get(self.selected_user_index)
-    }
-
     pub fn previous_account_menu_item(&mut self) {
         if self.selected_account_menu_item == 0 {
             self.selected_account_menu_item = self.account_menu_items.len() - 1;
