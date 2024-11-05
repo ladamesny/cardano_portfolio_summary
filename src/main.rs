@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         db
     });
 
-    let mut user_service = UserService::new(database);
+    let user_service = UserService::new(database);
     let user_id = prompt_for_user_name(user_service.get_database()).await;
     user_service.login(&user_id).await?;
     let user = user_service.get_current_user().await
