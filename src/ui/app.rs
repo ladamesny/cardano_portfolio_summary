@@ -67,6 +67,10 @@ impl App {
                                             if self.state.current_page() == &Page::Positions {
                                                 self.state.next_positions_menu_item();
                                             }
+
+                                            if self.state.current_page() == &Page::WatchList {
+                                                self.state.next_watch_list_menu_item();
+                                            }
                                         },
                                         KeyCode::Up | KeyCode::Char('k') => {
                                             if self.state.current_page() == &Page::Account {
@@ -75,6 +79,10 @@ impl App {
 
                                             if self.state.current_page() == &Page::Positions {
                                                 self.state.previous_positions_menu_item();
+                                            }
+
+                                            if self.state.current_page() == &Page::WatchList {
+                                                self.state.previous_watch_list_menu_item();
                                             }
                                         },
                                         KeyCode::Enter => {

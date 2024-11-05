@@ -45,6 +45,12 @@ pub enum PositionsFocus {
     Content,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum WatchListFocus {
+    Menu,
+    Content,
+}
+
 pub struct AppState {
     pub current_page: Page,
     pub users: Vec<User>,
@@ -68,6 +74,8 @@ pub struct AppState {
     pub selected_fungible_token_index: usize,
     pub selected_nft_index: usize,
     pub selected_liquidity_position_index: usize,
+    pub watch_list_focus: WatchListFocus,
+    pub selected_watch_list_menu_item: usize,
 }
 
 impl AppState {
@@ -119,6 +127,8 @@ impl AppState {
             selected_fungible_token_index: 0,
             selected_nft_index: 0,
             selected_liquidity_position_index: 0,
+            watch_list_focus: WatchListFocus::Menu,
+            selected_watch_list_menu_item: 0,
         }
     }
 
@@ -198,6 +208,18 @@ impl AppState {
             self.ada_balance = portfolio.ada_balance;
             self.ada_value = portfolio.ada_value;
             self.liquid_value = portfolio.liquid_value;
+        }
+    }
+
+    pub fn next_watch_list_menu_item(&mut self) {
+        self.selected_watch_list_menu_item = (self.selected_watch_list_menu_item + 1) % 2;
+    }
+
+    pub fn previous_watch_list_menu_item(&mut self) {
+        if self.selected_watch_list_menu_item > 0 {
+            self.selected_watch_list_menu_item -= 1;
+        } else {
+            self.selected_watch_list_menu_item = 1;
         }
     }
 }
