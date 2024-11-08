@@ -20,16 +20,14 @@ pub struct MenuItem {
     pub key: String,
     pub label: String,
     pub page: Page,
-    pub content: String,
 }
 
 impl MenuItem {
-    pub fn new(key: &str, label: &str, page: Page, content: &str) -> Self {
+    pub fn new(key: &str, label: &str, page: Page) -> Self {
         MenuItem {
             key: key.to_string(),
             label: label.to_string(),
             page,
-            content: content.to_string(),
         }
     }
 }
@@ -111,16 +109,16 @@ impl AppState {
             .expect("Failed to parse portfolio data");
 
         let menu_items = vec![
-            MenuItem::new("p", "Crypto Positions", Page::Positions, ""),
-            MenuItem::new("w", "Watch List", Page::WatchList, ""),
-            MenuItem::new("a", "Account", Page::Account, ""),
-            MenuItem::new("r", "Refresh", Page::Positions, ""),
-            MenuItem::new("q", "Quit", Page::Quit, ""),
+            MenuItem::new("p", "Crypto Positions", Page::Positions),
+            MenuItem::new("w", "Watch List", Page::WatchList),
+            MenuItem::new("a", "Account", Page::Account),
+            MenuItem::new("r", "Refresh", Page::Positions),
+            MenuItem::new("q", "Quit", Page::Quit),
         ];
 
         let focused_menu_items = vec![
-            MenuItem::new("q", "Quit", Page::Quit, ""),
-            MenuItem::new("esc", "Back", Page::Back, ""),
+            MenuItem::new("q", "Quit", Page::Quit),
+            MenuItem::new("esc", "Back", Page::Back),
         ];
 
         AppState {
