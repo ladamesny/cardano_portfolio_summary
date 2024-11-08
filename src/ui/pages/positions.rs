@@ -178,10 +178,12 @@ pub fn draw_nft_positions(f: &mut Frame, state: &AppState, area: Rect) {
         let change_7d = position.change_7d.unwrap_or(0.0) * 100.0;
         let change_30d = position.change_30d.unwrap_or(0.0) * 100.0;
 
-        let row_style = if index % 2 == 0 {
+        let row_style = if state.positions_focus == PositionsFocus::Content && index == state.selected_nft_row {
+            Style::default().bg(Color::Yellow).fg(Color::Black)
+        } else if index % 2 == 0 {
             Style::default()
         } else {
-            Style::default().bg(Color::Rgb(25, 0, 25))
+            Style::default().bg(Color::Rgb(25, 0, 25)).fg(Color::White)
         };
 
         let row_cells = vec![
@@ -237,10 +239,12 @@ pub fn draw_lp_positions(f: &mut Frame, state: &AppState, area: Rect) {
         .height(2);
 
     let rows = state.positions_lp.iter().enumerate().map(|(index, position)| {
-        let row_style = if index % 2 == 0 {
+        let row_style = if state.positions_focus == PositionsFocus::Content && index == state.selected_lp_row {
+            Style::default().bg(Color::Yellow).fg(Color::Black)
+        } else if index % 2 == 0 {
             Style::default()
         } else {
-            Style::default().bg(Color::Rgb(25, 0, 25))
+            Style::default().bg(Color::Rgb(25, 0, 25)).fg(Color::White)
         };
 
         let row_cells = vec![

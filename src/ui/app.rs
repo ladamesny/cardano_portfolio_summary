@@ -156,6 +156,20 @@ impl App {
                             _ => {}
                         }
                     },
+                    1 => { // Non-Fungible Tokens
+                        match code {
+                            KeyCode::Down | KeyCode::Char('j') => self.state.next_nft_row(),
+                            KeyCode::Up | KeyCode::Char('k') => self.state.previous_nft_row(),
+                            _ => {}
+                        }
+                    },
+                    2 => { // Liquidity Positions
+                        match code {
+                            KeyCode::Down | KeyCode::Char('j') => self.state.next_lp_row(),
+                            KeyCode::Up | KeyCode::Char('k') => self.state.previous_lp_row(),
+                            _ => {}
+                        }
+                    },
                     _ => {}
                 }
             },

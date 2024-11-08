@@ -76,6 +76,8 @@ pub struct AppState {
     pub selected_watch_list_menu_item: usize,
     pub market_cap_tokens: Vec<MarketCapToken>,
     pub selected_ft_row: usize,
+    pub selected_nft_row: usize,
+    pub selected_lp_row: usize,
 }
 
 impl AppState {
@@ -128,6 +130,8 @@ impl AppState {
             selected_watch_list_menu_item: 0,
             market_cap_tokens: Vec::new(),
             selected_ft_row: 0,
+            selected_nft_row: 0,
+            selected_lp_row: 0,
         }
     }
 
@@ -238,6 +242,38 @@ impl AppState {
                 self.selected_ft_row -= 1;
             } else {
                 self.selected_ft_row = self.positions_ft.len() - 1;
+            }
+        }
+    }
+
+    pub fn next_nft_row(&mut self) {
+        if !self.positions_nft.is_empty() {
+            self.selected_nft_row = (self.selected_nft_row + 1) % self.positions_nft.len();
+        }
+    }
+
+    pub fn previous_nft_row(&mut self) {
+        if !self.positions_nft.is_empty() {
+            if self.selected_nft_row > 0 {
+                self.selected_nft_row -= 1;
+            } else {
+                self.selected_nft_row = self.positions_nft.len() - 1;
+            }
+        }
+    }
+
+    pub fn next_lp_row(&mut self) {
+        if !self.positions_lp.is_empty() {
+            self.selected_lp_row = (self.selected_lp_row + 1) % self.positions_lp.len();
+        }
+    }
+
+    pub fn previous_lp_row(&mut self) {
+        if !self.positions_lp.is_empty() {
+            if self.selected_lp_row > 0 {
+                self.selected_lp_row -= 1;
+            } else {
+                self.selected_lp_row = self.positions_lp.len() - 1;
             }
         }
     }
