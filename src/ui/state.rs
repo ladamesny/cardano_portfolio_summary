@@ -72,12 +72,10 @@ pub struct AppState {
     pub positions_focus: PositionsFocus,
     pub positions_menu_items: Vec<String>,
     pub selected_positions_menu_item: usize,
-    pub selected_fungible_token_index: usize,
-    pub selected_nft_index: usize,
-    pub selected_liquidity_position_index: usize,
     pub watch_list_focus: WatchListFocus,
     pub selected_watch_list_menu_item: usize,
     pub market_cap_tokens: Vec<MarketCapToken>,
+    pub selected_ft_row: usize,
 }
 
 impl AppState {
@@ -126,12 +124,10 @@ impl AppState {
                 "Liquidity Positions".to_string(),
             ],
             selected_positions_menu_item: 0,
-            selected_fungible_token_index: 0,
-            selected_nft_index: 0,
-            selected_liquidity_position_index: 0,
             watch_list_focus: WatchListFocus::Menu,
             selected_watch_list_menu_item: 0,
             market_cap_tokens: Vec::new(),
+            selected_ft_row: 0,
         }
     }
 
@@ -228,5 +224,21 @@ impl AppState {
             WatchListFocus::Menu => WatchListFocus::Content,
             WatchListFocus::Content => WatchListFocus::Menu,
         };
+    }
+
+    pub fn next_ft_row(&mut self) {
+        if !self.positions_ft.is_empty() {
+            self.selected_ft_row = (self.selected_ft_row + 1) % self.positions_ft.len();
+        }
+    }
+
+    pub fn previous_ft_row(&mut self) {
+        if !self.positions_ft.is_empty() {
+            if self.selected_ft_row > 0 {
+                self.selected_ft_row -= 1;
+            } else {
+                self.selected_ft_row = self.positions_ft.len() - 1;
+            }
+        }
     }
 }

@@ -148,10 +148,13 @@ impl App {
     async fn handle_content_input(&mut self, code: KeyCode) -> io::Result<()> {
         match self.state.current_page() {
             Page::Positions => {
-                match code {
-                    KeyCode::Down | KeyCode::Char('j') |
-                    KeyCode::Up | KeyCode::Char('k') => {
-                        // Either do nothing or implement content-specific navigation
+                match self.state.selected_positions_menu_item {
+                    0 => { // Fungible Tokens
+                        match code {
+                            KeyCode::Down | KeyCode::Char('j') => self.state.next_ft_row(),
+                            KeyCode::Up | KeyCode::Char('k') => self.state.previous_ft_row(),
+                            _ => {}
+                        }
                     },
                     _ => {}
                 }
