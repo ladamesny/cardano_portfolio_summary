@@ -80,6 +80,31 @@ pub struct AppState {
     pub selected_lp_row: usize,
 }
 
+trait CircularNavigation {
+    fn next_index(&self, current: usize) -> usize;
+    fn previous_index(&self, current: usize) -> usize;
+}
+
+impl<T> CircularNavigation for Vec<T> {
+    fn next_index(&self, current: usize) -> usize {
+        if self.is_empty() {
+            0
+        } else {
+            (current + 1) % self.len()
+        }
+    }
+
+    fn previous_index(&self, current: usize) -> usize {
+        if self.is_empty() {
+            0
+        } else if current == 0 {
+            self.len() - 1
+        } else {
+            current - 1
+        }
+    }
+}
+
 impl AppState {
     pub fn new(portfolio_json: String, user: User) -> Self {
         let portfolio: PortfolioSummary = serde_json::from_str(&portfolio_json)
@@ -154,15 +179,11 @@ impl AppState {
     }
 
     pub fn next_account_menu_item(&mut self) {
-        self.selected_account_menu_item = (self.selected_account_menu_item + 1) % self.account_menu_items.len();
+        self.selected_account_menu_item = self.navigate_next(&self.account_menu_items, self.selected_account_menu_item);
     }
 
     pub fn previous_account_menu_item(&mut self) {
-        if self.selected_account_menu_item == 0 {
-            self.selected_account_menu_item = self.account_menu_items.len() - 1;
-        } else {
-            self.selected_account_menu_item -= 1;
-        }
+        self.selected_account_menu_item = self.navigate_previous(&self.account_menu_items, self.selected_account_menu_item);
     }
 
     pub fn toggle_account_focus(&mut self) {
@@ -182,15 +203,11 @@ impl AppState {
     }
 
     pub fn next_positions_menu_item(&mut self) {
-        self.selected_positions_menu_item = (self.selected_positions_menu_item + 1) % self.positions_menu_items.len();
+        self.selected_positions_menu_item = self.navigate_next(&self.positions_menu_items, self.selected_positions_menu_item);
     }
 
     pub fn previous_positions_menu_item(&mut self) {
-        if self.selected_positions_menu_item == 0 {
-            self.selected_positions_menu_item = self.positions_menu_items.len() - 1;
-        } else {
-            self.selected_positions_menu_item -= 1;
-        }
+        self.selected_positions_menu_item = self.navigate_previous(&self.positions_menu_items, self.selected_positions_menu_item);
     }
 
     pub fn toggle_positions_focus(&mut self) {
@@ -212,15 +229,11 @@ impl AppState {
     }
 
     pub fn next_watch_list_menu_item(&mut self) {
-        self.selected_watch_list_menu_item = (self.selected_watch_list_menu_item + 1) % 3;
+        self.selected_watch_list_menu_item = self.navigate_next(&self.positions_menu_items, self.selected_watch_list_menu_item);
     }
 
     pub fn previous_watch_list_menu_item(&mut self) {
-        if self.selected_watch_list_menu_item > 0 {
-            self.selected_watch_list_menu_item -= 1;
-        } else {
-            self.selected_watch_list_menu_item = 2;
-        }
+        self.selected_watch_list_menu_item = self.navigate_previous(&self.positions_menu_items, self.selected_watch_list_menu_item);
     }
 
     pub fn toggle_watch_list_focus(&mut self) {
@@ -231,50 +244,35 @@ impl AppState {
     }
 
     pub fn next_ft_row(&mut self) {
-        if !self.positions_ft.is_empty() {
-            self.selected_ft_row = (self.selected_ft_row + 1) % self.positions_ft.len();
-        }
+        self.selected_ft_row = self.navigate_next(&self.positions_ft, self.selected_ft_row);
     }
 
     pub fn previous_ft_row(&mut self) {
-        if !self.positions_ft.is_empty() {
-            if self.selected_ft_row > 0 {
-                self.selected_ft_row -= 1;
-            } else {
-                self.selected_ft_row = self.positions_ft.len() - 1;
-            }
-        }
+        self.selected_ft_row = self.navigate_previous(&self.positions_ft, self.selected_ft_row);
     }
 
     pub fn next_nft_row(&mut self) {
-        if !self.positions_nft.is_empty() {
-            self.selected_nft_row = (self.selected_nft_row + 1) % self.positions_nft.len();
-        }
+        self.selected_nft_row = self.navigate_next(&self.positions_nft, self.selected_nft_row);
     }
 
     pub fn previous_nft_row(&mut self) {
-        if !self.positions_nft.is_empty() {
-            if self.selected_nft_row > 0 {
-                self.selected_nft_row -= 1;
-            } else {
-                self.selected_nft_row = self.positions_nft.len() - 1;
-            }
-        }
+        self.selected_nft_row = self.navigate_previous(&self.positions_nft, self.selected_nft_row);
     }
 
     pub fn next_lp_row(&mut self) {
-        if !self.positions_lp.is_empty() {
-            self.selected_lp_row = (self.selected_lp_row + 1) % self.positions_lp.len();
-        }
+        self.selected_lp_row = self.navigate_next(&self.positions_lp, self.selected_lp_row);
     }
 
     pub fn previous_lp_row(&mut self) {
-        if !self.positions_lp.is_empty() {
-            if self.selected_lp_row > 0 {
-                self.selected_lp_row -= 1;
-            } else {
-                self.selected_lp_row = self.positions_lp.len() - 1;
-            }
-        }
+        self.selected_lp_row = self.navigate_previous(&self.positions_lp, self.selected_lp_row);
+    }
+
+    // Generic navigation methods
+    fn navigate_next<T>(&self, items: &Vec<T>, current: usize) -> usize {
+        items.next_index(current)
+    }
+
+    fn navigate_previous<T>(&self, items: &Vec<T>, current: usize) -> usize {
+        items.previous_index(current)
     }
 }
