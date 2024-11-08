@@ -175,7 +175,8 @@ impl AppState {
     pub fn is_content_focused(&self) -> bool {
         match self.current_page() {
             Page::Account => self.account_focus == AccountFocus::Content,
-            // Add other pages here when they have a content focus
+            Page::Positions => self.positions_focus == PositionsFocus::Content,
+            Page::WatchList => self.watch_list_focus == WatchListFocus::Content,
             _ => false,
         }
     }

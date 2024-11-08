@@ -48,87 +48,24 @@ impl App {
                         match code {
                             KeyCode::Char('q') => return Ok(()),
                             KeyCode::Esc => {
-                                if self.state.current_page() == &Page::Positions 
-                                    && self.state.positions_focus == PositionsFocus::Content {
-                                    self.state.toggle_positions_focus();
-                                }
-
-                                if self.state.current_page() == &Page::WatchList 
-                                    && self.state.watch_list_focus == WatchListFocus::Content {
-                                    self.state.toggle_watch_list_focus();
-                                }
-
-                                if self.state.current_page() == &Page::Account 
-                                    && self.state.account_focus == AccountFocus::Content {
-                                    self.state.toggle_account_focus();
+                                match self.state.current_page() {
+                                    Page::Positions if self.state.positions_focus == PositionsFocus::Content => {
+                                        self.state.toggle_positions_focus()
+                                    },
+                                    Page::WatchList if self.state.watch_list_focus == WatchListFocus::Content => {
+                                        self.state.toggle_watch_list_focus()
+                                    },
+                                    Page::Account if self.state.account_focus == AccountFocus::Content => {
+                                        self.state.toggle_account_focus()
+                                    },
+                                    _ => {}
                                 }
                             },
                             _ => {
                                 if self.state.is_content_focused() {
-                                    // Handle content-specific actions
+                                    self.handle_content_input(code).await?;
                                 } else {
-                                    match code {
-                                        KeyCode::Char('r') => {
-                                            if self.state.current_page() == &Page::Positions {
-                                                if let Ok(new_data) = self.user_service.fetch_portfolio_data().await {
-                                                    self.state.update_portfolio(new_data);
-                                                }
-                                            }
-                                            
-                                            if self.state.current_page() == &Page::WatchList 
-                                                && self.state.selected_watch_list_menu_item == 2 { // Market Caps menu item
-                                                if let Ok(tokens) = self.user_service.get_market_cap_data().await {
-                                                    self.state.market_cap_tokens = tokens;
-                                                }
-                                            }
-                                        },
-                                        KeyCode::Char('w') => self.state.set_current_page(Page::WatchList),
-                                        KeyCode::Char('p') => self.state.set_current_page(Page::Positions),
-                                        KeyCode::Char('a') => self.state.set_current_page(Page::Account),
-                                        KeyCode::Down | KeyCode::Char('j') => {
-                                            if self.state.current_page() == &Page::Account {
-                                                self.state.next_account_menu_item();
-                                            }
-
-                                            if self.state.current_page() == &Page::Positions {
-                                                self.state.next_positions_menu_item();
-                                            }
-
-                                            if self.state.current_page() == &Page::WatchList {
-                                                self.state.next_watch_list_menu_item();
-                                                self.handle_watch_list_navigation().await;
-                                            }
-                                        },
-                                        KeyCode::Up | KeyCode::Char('k') => {
-                                            if self.state.current_page() == &Page::Account {
-                                                self.state.previous_account_menu_item();
-                                            }
-
-                                            if self.state.current_page() == &Page::Positions {
-                                                self.state.previous_positions_menu_item();
-                                            }
-
-                                            if self.state.current_page() == &Page::WatchList {
-                                                self.state.previous_watch_list_menu_item();
-                                            }
-                                        },
-                                        KeyCode::Enter => {
-                                            if self.state.current_page() == &Page::Account {
-                                                self.state.toggle_account_focus();
-                                            }
-
-                                            if self.state.current_page() == &Page::Positions 
-                                                && self.state.positions_focus == PositionsFocus::Menu {
-                                                self.state.toggle_positions_focus();
-                                            }
-
-                                            if self.state.current_page() == &Page::WatchList 
-                                                && self.state.watch_list_focus == WatchListFocus::Menu {
-                                                self.state.toggle_watch_list_focus();
-                                            }
-                                        },
-                                        _ => {}
-                                    }
+                                    self.handle_menu_input(code).await?;
                                 }
                             }
                         }
@@ -150,6 +87,84 @@ impl App {
                 }
             }
         }
+    }
+
+    async fn handle_menu_input(&mut self, code: KeyCode) -> io::Result<()> {
+        match code {
+            KeyCode::Down | KeyCode::Char('j') => {
+                match self.state.current_page() {
+                    Page::Account => self.state.next_account_menu_item(),
+                    Page::Positions => self.state.next_positions_menu_item(),
+                    Page::WatchList => {
+                        self.state.next_watch_list_menu_item();
+                        self.handle_watch_list_navigation().await;
+                    }
+                    _ => {}
+                }
+            },
+            KeyCode::Up | KeyCode::Char('k') => {
+                match self.state.current_page() {
+                    Page::Account => self.state.previous_account_menu_item(),
+                    Page::Positions => self.state.previous_positions_menu_item(),
+                    Page::WatchList => self.state.previous_watch_list_menu_item(),
+                    _ => {}
+                }
+            },
+            KeyCode::Char('r') => {
+                match self.state.current_page() {
+                    Page::Positions => {
+                        if let Ok(new_data) = self.user_service.fetch_portfolio_data().await {
+                            self.state.update_portfolio(new_data);
+                        }
+                    },
+                    Page::WatchList if self.state.selected_watch_list_menu_item == 2 => {
+                        if let Ok(tokens) = self.user_service.get_market_cap_data().await {
+                            self.state.market_cap_tokens = tokens;
+                        }
+                    },
+                    _ => {}
+                }
+            },
+            KeyCode::Char('w') => self.state.set_current_page(Page::WatchList),
+            KeyCode::Char('p') => self.state.set_current_page(Page::Positions),
+            KeyCode::Char('a') => self.state.set_current_page(Page::Account),
+            KeyCode::Enter => {
+                match self.state.current_page() {
+                    Page::Account => self.state.toggle_account_focus(),
+                    Page::Positions if self.state.positions_focus == PositionsFocus::Menu => {
+                        self.state.toggle_positions_focus()
+                    },
+                    Page::WatchList if self.state.watch_list_focus == WatchListFocus::Menu => {
+                        self.state.toggle_watch_list_focus()
+                    },
+                    _ => {}
+                }
+            },
+            _ => {}
+        }
+        Ok(())
+    }
+
+    async fn handle_content_input(&mut self, code: KeyCode) -> io::Result<()> {
+        match self.state.current_page() {
+            Page::Positions => {
+                match code {
+                    KeyCode::Down | KeyCode::Char('j') |
+                    KeyCode::Up | KeyCode::Char('k') => {
+                        // Either do nothing or implement content-specific navigation
+                    },
+                    _ => {}
+                }
+            },
+            Page::WatchList => {
+                // Handle watch list content input
+            },
+            Page::Account => {
+                // Handle account content input
+            },
+            _ => {}
+        }
+        Ok(())
     }
 }
 
