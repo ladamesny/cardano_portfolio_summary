@@ -4,6 +4,9 @@ mod services;
 mod ui;
 mod utils;
 
+use utils::spinner::Spinner;
+use utils::ascii_art::render_landing_page;
+
 use db::Database;
 use services::user_service::UserService;
 use ui::{App, run_app};
@@ -26,7 +29,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .expect("User should be logged in")
         .clone();
 
-    let portfolio_data = user_service.fetch_portfolio_data().await?;
+    render_landing_page();
+    let portfolio_data = Spinner::spin_while(
+        "Loading portfolio data...",
+        user_service.fetch_portfolio_data()
+    ).await?;
+
     let mut app = App::new(portfolio_data, user, user_service);
     run_app(&mut app).await?;
 
