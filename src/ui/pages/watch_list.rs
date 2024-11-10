@@ -3,7 +3,7 @@ use ratatui::{
     layout::{Rect, Layout, Direction, Constraint},
     style::{Style, Color, Modifier},
     prelude::Margin,
-    widgets::{Block, Borders, List, ListItem, ListState, Cell, Row, Table},
+    widgets::{Block, Borders, List, ListItem, ListState, Cell, Row, Table, TableState},
 };
 use crate::ui::state::{AppState, WatchListFocus};
 use crate::utils::formatting::{format_ada, format_number, format_change};
@@ -91,6 +91,9 @@ fn draw_watching(f: &mut Frame, state: &AppState, area: Rect) {
 
 fn draw_market_caps(f: &mut Frame, state: &AppState, area: Rect) {
     let highlight_color = Color::Rgb(128, 0, 128);
+    let selected_style = Style::default()
+        .fg(Color::Yellow)
+        .add_modifier(Modifier::BOLD);
     
     let header_cells = ["Ticker", "Price", "Market Cap", "FDV", "Circ Supply", "Total Supply"]
         .iter()
@@ -107,7 +110,10 @@ fn draw_market_caps(f: &mut Frame, state: &AppState, area: Rect) {
         .height(2);
 
     let rows = state.market_cap_tokens.iter().enumerate().map(|(index, token)| {
-        let row_style = if index % 2 == 0 {
+        let row_style = if state.watch_list_focus == WatchListFocus::Content 
+            && Some(index) == state.selected_market_cap_row {
+            selected_style
+        } else if index % 2 == 0 {
             Style::default()
         } else {
             Style::default().bg(Color::Rgb(25, 0, 25))
@@ -143,5 +149,10 @@ fn draw_market_caps(f: &mut Frame, state: &AppState, area: Rect) {
         .highlight_style(Style::default().add_modifier(Modifier::BOLD))
         .highlight_symbol(">> ");
 
-    f.render_widget(table, area);
+    let mut table_state = TableState::default();
+    if state.watch_list_focus == WatchListFocus::Content {
+        table_state.select(state.selected_market_cap_row);
+    }
+
+    f.render_stateful_widget(table, area, &mut table_state);
 }

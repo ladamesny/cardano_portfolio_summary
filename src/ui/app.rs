@@ -146,6 +146,22 @@ impl App {
         Ok(())
     }
 
+    fn next_market_cap_row(&mut self) {
+        if let Some(selected) = self.state.selected_market_cap_row {
+            if selected < self.state.market_cap_tokens.len().saturating_sub(1) {
+                self.state.selected_market_cap_row = Some(selected + 1);
+            }
+        }
+    }
+
+    fn previous_market_cap_row(&mut self) {
+        if let Some(selected) = self.state.selected_market_cap_row {
+            if selected > 0 {
+                self.state.selected_market_cap_row = Some(selected - 1);
+            }
+        }
+    }
+
     async fn handle_content_input(&mut self, code: KeyCode) -> io::Result<()> {
         match self.state.current_page() {
             Page::Positions => {
@@ -175,7 +191,16 @@ impl App {
                 }
             },
             Page::WatchList => {
-                // Handle watch list content input
+                match self.state.selected_watch_list_menu_item {
+                    2 => { // Market Caps
+                        match code {
+                            KeyCode::Down | KeyCode::Char('j') => self.next_market_cap_row(),
+                            KeyCode::Up | KeyCode::Char('k') => self.previous_market_cap_row(),
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
             },
             Page::Account => {
                 // Handle account content input

@@ -77,6 +77,7 @@ pub struct AppState {
     pub selected_nft_row: usize,
     pub selected_lp_row: usize,
     pub ada_usd_price: f64,
+    pub selected_market_cap_row: Option<usize>,
 }
 
 trait CircularNavigation {
@@ -157,6 +158,7 @@ impl AppState {
             selected_nft_row: 0,
             selected_lp_row: 0,
             ada_usd_price: ada_price,
+            selected_market_cap_row: Some(0),
         }
     }
 
