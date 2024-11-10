@@ -10,6 +10,7 @@ use crate::ui::{
 };
 use crate::models::user::User;
 use crate::services::user_service::UserService;
+use crate::utils::spinner::Spinner;
 use std::io;
 use ratatui::{
     backend::{Backend, CrosstermBackend},
@@ -23,15 +24,17 @@ use ratatui::{
 use std::io::stdout;
 use std::time::Duration;
 
+use crate::services::price::fetch_ada_price;
+
 pub struct App {
     pub state: AppState,
     pub user_service: UserService,
 }
 
 impl App {
-    pub fn new(portfolio_data: String, user: User, user_service: UserService) -> Self {
+    pub fn new(portfolio_data: String, user: User, user_service: UserService, ada_price: f64) -> Self {
         App {
-            state: AppState::new(portfolio_data, user),
+            state: AppState::new(portfolio_data, user, ada_price),
             user_service,
         }
     }
@@ -113,9 +116,7 @@ impl App {
             KeyCode::Char('r') => {
                 match self.state.current_page() {
                     Page::Positions => {
-                        if let Ok(new_data) = self.user_service.fetch_portfolio_data().await {
-                            self.state.update_portfolio(new_data);
-                        }
+                        let _ = self.refresh_data().await;
                     },
                     Page::WatchList if self.state.selected_watch_list_menu_item == 2 => {
                         if let Ok(tokens) = self.user_service.get_market_cap_data().await {
@@ -181,6 +182,21 @@ impl App {
             },
             _ => {}
         }
+        Ok(())
+    }
+
+    pub async fn refresh_data(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        let (portfolio, ada_price) = Spinner::spin_while(
+            "Refreshing data...",
+            async {
+                let portfolio = self.user_service.fetch_portfolio_data().await?;
+                let ada_price = fetch_ada_price().await?;
+                Ok::<_, Box<dyn std::error::Error>>((portfolio, ada_price))
+            }
+        ).await?;
+
+        self.state.update_portfolio(portfolio);
+        self.state.ada_usd_price = ada_price;
         Ok(())
     }
 }

@@ -32,6 +32,10 @@ pub fn format_ada(value: f64, decimals: usize) -> String {
     format!("₳{}", format_number(value, decimals))
 }
 
+pub fn format_usd(value: f64, decimals: usize) -> String {
+    format!("${}", format_number(value, decimals))
+}
+
 /// Formats a percentage change with colors and +/- symbol
 pub fn format_change(change: f64) -> Span<'static> {
     let formatted = format!("{:+.2}%", change);

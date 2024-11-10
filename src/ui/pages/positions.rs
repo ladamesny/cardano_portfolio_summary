@@ -7,14 +7,15 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState, Cell, Row, Table},
 };
 use crate::ui::state::{AppState, PositionsFocus};
-use crate::utils::formatting::{format_ada, format_number, format_change};
+use crate::utils::formatting::{format_ada, format_usd, format_number, format_change};
 
 pub fn draw_positions_page(f: &mut Frame, state: &mut AppState, area: Rect) {
-    // Format the ADA info for the title
+    // Format the ADA and USD info for the title
     let ada_info = format!(
-        "ADA Balance: {} | Value: {}",
-        format_ada(state.ada_balance, 2),
-        format_ada(state.ada_value, 2)
+        "Ada Value: {} | Ada Price: {} | USD Value: {}",
+        format_ada(state.ada_value, 2),
+        format_usd(state.ada_usd_price, 4),
+        format_usd(state.ada_value * state.ada_usd_price, 2)
     );
 
     // Create the main block with combined title
