@@ -59,8 +59,14 @@ async fn prompt_for_user_name(database: Arc<Mutex<Database>>) -> String {
         println!("User not found. Creating a new user.");
         let api_key = prompt_for_api_key();
         drop(db);
+        let wallet_info = prompt_for_wallet();
+        
         let mut db = database.lock().await;
-        db.create_user(name, api_key)
+        let user_id = db.create_user(name, api_key);
+        db.add_wallet(&user_id, wallet_info.0, vec![wallet_info.1])
+            .expect("Failed to add wallet");
+        db.save().expect("Failed to save database");
+        user_id
     }
 }
 
@@ -69,4 +75,18 @@ fn prompt_for_api_key() -> String {
     let mut api_key = String::new();
     std::io::stdin().read_line(&mut api_key).unwrap();
     api_key.trim().to_string()
+}
+
+fn prompt_for_wallet() -> (String, String) {
+    println!("Enter your wallet name:");
+    let mut wallet_name = String::new();
+    std::io::stdin().read_line(&mut wallet_name).unwrap();
+    let wallet_name = wallet_name.trim().to_string();
+
+    println!("Enter your wallet address:");
+    let mut wallet_address = String::new();
+    std::io::stdin().read_line(&mut wallet_address).unwrap();
+    let wallet_address = wallet_address.trim().to_string();
+
+    (wallet_name, wallet_address)
 }
