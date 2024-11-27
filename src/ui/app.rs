@@ -24,7 +24,7 @@ use ratatui::{
 use std::io::stdout;
 use std::time::Duration;
 
-use crate::services::price::fetch_ada_price;
+use crate::services::price::{fetch_ada_price, fetch_btc_price};
 
 pub struct App {
     pub state: AppState,
@@ -32,9 +32,9 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(portfolio_data: String, user: User, user_service: UserService, ada_price: f64) -> Self {
+    pub fn new(portfolio_data: String, user: User, user_service: UserService, ada_price: f64, btc_price: f64) -> Self {
         App {
-            state: AppState::new(portfolio_data, user, ada_price),
+            state: AppState::new(portfolio_data, user, ada_price, btc_price),
             user_service,
         }
     }
@@ -211,17 +211,19 @@ impl App {
     }
 
     pub async fn refresh_data(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        let (portfolio, ada_price) = Spinner::spin_while(
+        let (portfolio, ada_price, btc_price) = Spinner::spin_while(
             "Refreshing data...",
             async {
                 let portfolio = self.user_service.fetch_portfolio_data().await?;
                 let ada_price = fetch_ada_price().await?;
-                Ok::<_, Box<dyn std::error::Error>>((portfolio, ada_price))
+                let btc_price = fetch_btc_price().await?;
+                Ok::<_, Box<dyn std::error::Error>>((portfolio, ada_price, btc_price))
             }
         ).await?;
 
         self.state.update_portfolio(portfolio);
         self.state.ada_usd_price = ada_price;
+        self.state.btc_usd_price = btc_price;
         Ok(())
     }
 }

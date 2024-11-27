@@ -12,9 +12,10 @@ use crate::utils::formatting::{format_ada, format_usd, format_number, format_cha
 pub fn draw_positions_page(f: &mut Frame, state: &mut AppState, area: Rect) {
     // Format the ADA and USD info for the title
     let ada_info = format!(
-        "Ada Value: {} | Ada Price: {} | USD Value: {}",
-        format_ada(state.ada_value, 2),
+        "BTC Price: {} | Ada Price: {} | Ada Value: {} | USD Value: {}",
+        format_usd(state.btc_usd_price, 2),
         format_usd(state.ada_usd_price, 4),
+        format_ada(state.ada_value, 2),
         format_usd(state.ada_value * state.ada_usd_price, 2)
     );
 

@@ -8,7 +8,7 @@ use utils::spinner::Spinner;
 use utils::ascii_art::render_landing_page;
 
 use db::Database;
-use services::price::fetch_ada_price;
+use services::price::{fetch_ada_price, fetch_btc_price};
 use services::user_service::UserService;
 use ui::{App, run_app};
 
@@ -31,16 +31,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .clone();
 
     render_landing_page();
-    let (portfolio_data, ada_price) = Spinner::spin_while(
+    let (portfolio_data, ada_price, btc_price) = Spinner::spin_while(
         "Loading portfolio data...",
         async {
             let portfolio = user_service.fetch_portfolio_data().await?;
             let ada_price = fetch_ada_price().await?;
-            Ok::<_, Box<dyn std::error::Error>>((portfolio, ada_price))
+            let btc_price = fetch_btc_price().await?;
+            Ok::<_, Box<dyn std::error::Error>>((portfolio, ada_price, btc_price))
         }
     ).await?;
 
-    let mut app = App::new(portfolio_data, user, user_service, ada_price);
+    let mut app = App::new(portfolio_data, user, user_service, ada_price, btc_price);
     run_app(&mut app).await?;
 
     Ok(())

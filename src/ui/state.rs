@@ -77,6 +77,7 @@ pub struct AppState {
     pub selected_nft_row: usize,
     pub selected_lp_row: usize,
     pub ada_usd_price: f64,
+    pub btc_usd_price: f64,
     pub selected_market_cap_row: Option<usize>,
 }
 
@@ -106,7 +107,7 @@ impl<T> CircularNavigation for Vec<T> {
 }
 
 impl AppState {
-    pub fn new(portfolio_json: String, user: User, ada_price: f64) -> Self {
+    pub fn new(portfolio_json: String, user: User, ada_price: f64, btc_price: f64) -> Self {
         let portfolio: PortfolioSummary = serde_json::from_str(&portfolio_json)
             .expect("Failed to parse portfolio data");
 
@@ -158,6 +159,7 @@ impl AppState {
             selected_nft_row: 0,
             selected_lp_row: 0,
             ada_usd_price: ada_price,
+            btc_usd_price: btc_price,
             selected_market_cap_row: Some(0),
         }
     }
