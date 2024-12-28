@@ -1,13 +1,13 @@
-use crate::models::user::User;
 use crate::models::{
+    user::User,
     ft_position::FtPosition,
     nft_position::NftPosition,
     lp_position::LpPosition,
     portfolio_summary::PortfolioSummary,
+    market_cap_token::MarketCapToken,
 };
-use crate::models::market_cap_token::MarketCapToken;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum Page {
     Positions,
     WatchList,

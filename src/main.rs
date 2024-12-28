@@ -1,19 +1,17 @@
 mod db;
-mod models;
 mod services;
 mod ui;
 mod utils;
 
-use utils::spinner::Spinner;
-use utils::ascii_art::render_landing_page;
-
-use db::Database;
-use services::price::{fetch_ada_price, fetch_btc_price};
-use services::user_service::UserService;
-use ui::{App, run_app};
-
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use cardano_portfolio_summary::{
+    db::Database,
+    models,
+    services::{price::{fetch_ada_price, fetch_btc_price}, user_service::UserService},
+    ui::{App, run_app},
+    utils::{spinner::Spinner, ascii_art::render_landing_page},
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
